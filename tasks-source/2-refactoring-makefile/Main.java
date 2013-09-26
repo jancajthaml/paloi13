@@ -1,11 +1,13 @@
-package pal;
+package task2;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Vector;
 
@@ -33,12 +35,15 @@ public class Main
 		
 		slurp();
 		Node root = cache.get("all");
-		if(cycle(root)) System.out.println("ERROR");
+		if(circle(root)) System.out.println("ERROR");
 		else
 		{
-	//		for(Node n : cache.values()) n.visited=false;
-			traverse(root);
-			out();
+			try
+			{
+				traverse(root);
+				out();
+			}
+			catch(FatalError e){System.out.println("ERROR "+e.getLocalizedMessage());}
 		}
 	}
 
@@ -117,12 +122,43 @@ public class Main
 		System.out.print(buffer);
 	}
 
-	static boolean cycle(Node n)
+	
+	public static boolean circle(Node node)
 	{
-	    return false;
+		for(Node n : getNeighbors(node))
+		{
+			n.visited=true;
+			if(circle(n,node))
+			{
+				n.visited = false;
+				return true;
+			}
+			n.visited = false;
+		}
+		return false;
 	}
 	
-	public static void traverse(Node node)
+	public static boolean circle(Node node, Node origin)
+	{
+		
+		for(Node n : getNeighbors(node))
+		{
+			System.out.println(" checking "+origin+" –> "+node+" -> "+n);
+			if(origin.visited && n.visited) return true;
+			if(node.visited)
+			{
+				n.visited=true;
+				if(circle(n,node)){
+					n.visited=false;
+					return true;
+				}
+				n.visited=false;
+			}
+		}
+		return false;
+	}
+	
+	public static void traverse(Node node) throws FatalError
 	{
 		Queue<Node> q	= new LinkedList<Node>();
 		q.add(node);
@@ -139,10 +175,16 @@ public class Main
 					adj.visited = true;
 					q.add(adj);
 				}
+				//else throw new FatalError(adj.toString());
 			}
 		}
 	}
 
+	static class FatalError extends RuntimeException
+	{
+		FatalError(String msg){super(msg);}
+	}
+	
 	public static Vector<Node> getNeighbors(Node a)
 	{
 		Vector<Node> neighbors = new Vector<Node>();
@@ -163,13 +205,19 @@ class Node
 {
 	String data;
 	boolean visited;
-	
+
+
 	public Node(String data)
 	{ this.data = data; }
 	
 	public java.lang.String toString()
-	{ return data.toString()+"["+(visited?" ":"#")+"]"; }
+	{ return data.toString()+"["+(visited?"X":" ")+"]"; }
 
+	public boolean equals(Object another)
+	{
+		System.out.println((((Node)another).data == this.data)+" "+this+" x "+another);
+		return ((Node)another).data == this.data;
+	}
 }
 
 class Edge
