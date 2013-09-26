@@ -19,10 +19,9 @@ public class Main
 	static int LINES_RED						= 0;
 	static HashMap<Integer,String> relation		= new HashMap<Integer,String>();
 	protected static Vector<Edge> edges			= new Vector<Edge>();
-
 	static String s								= "";
-	static int current							= 0;
 	static String name							= "";
+	static int current							= 0;
 	
 	//TODO get rid of Node objects
 	private static int[] visited				= new int[BIG_ENOUGHT_LINES];
@@ -37,25 +36,22 @@ public class Main
 		if(cycle(root)) System.out.println("ERROR");
 		else
 		{
-			for(Node n : cache.values()) n.visited=false;
+	//		for(Node n : cache.values()) n.visited=false;
 			traverse(root);
 			out();
 		}
-		
-		
 	}
 
 	private static Node node(String key)
 	{
-		key=key.trim();
-		Node n ;
-		if(!cache.containsKey(key))
+		key		= key.trim();
+		Node n	= cache.get(key);
+		
+		if(n==null)
 		{
-			//System.err.print("creating "+key);
 			n = new Node(key);
 			cache.put(key, n);
 		}
-		else n = cache.get(key);
 		
 		return n;
 	}
@@ -63,9 +59,9 @@ public class Main
 	
 	private static void readLine()
 	{
-		line_map[LINES_RED++]=s;
+		line_map[LINES_RED++] = s;
 		
-		System.err.print("RED LINE : "+s);
+		//System.err.print("RED LINE : "+s);
 		if(s.charAt(0) != 9)
 		{
 			try
@@ -90,43 +86,6 @@ public class Main
 		s="";
 	}
 	
-
-    private static void printEachLine() throws IOException {
-        int foo = 0;
-        char ch = 0;
-        StringBuilder sb = new StringBuilder();
-        
-        boolean isEOL = false;  //err, need to set this or get rid of it
-        do {
-            foo = bi.read();
-            ch = (char) foo;
-            sb.append(ch);
-            
-            if ((ch == 10))
-            {    
-                System.err.print(sb);
-
-                foo = bi.read();
-                ch = (char) foo;
-                sb.append(ch);
-                if (ch != 13)
-                {
-                    while ((255 > ch) && (ch >= 0))
-                    {
-                        sb = new StringBuilder();
-                        foo = bi.read();
-                        ch = (char) foo;
-                        sb.append(ch);
-                        System.err.print(sb);
-                        
-                    }
-                }
-                sb.append(ch);
-            }
-
-        } while (!isEOL);
-    }
-    
 	public static String slurp()
 	{
 		
@@ -137,27 +96,26 @@ public class Main
 				s+=(char)current;
 				
 				if(current == '\n')
-				{
 					readLine();
-				}
 			}
-			System.out.println("");
 			//System.err.println("s "+s);
 			//readLine();
 		}
-		catch (UnsupportedEncodingException ex)	{ System.out.println("ERROR");}
-		catch (IOException ex)					{ System.out.println("ERROR");}
+		catch (UnsupportedEncodingException ex)	{ System.out.println("ERROR"); }
+		catch (IOException ex)					{ System.out.println("ERROR"); }
 		return s;
 	}
 
 	static void out()
 	{
 		buffer.setLength(0);
+		
+		//FIXME set "#" in NODE and get rid of O(n) here
 		for(int i=0; i<LINES_RED; i++)
 			buffer.append((i==0 || cache.get(relation.get(i)).visited)?(line_map[i]):("#"+line_map[i]));
+		
 		System.out.print(buffer);
 	}
-
 
 	static boolean cycle(Node n)
 	{
@@ -166,9 +124,9 @@ public class Main
 	
 	public static void traverse(Node node)
 	{
-		Queue<Node> q = new LinkedList<Node>();
+		Queue<Node> q	= new LinkedList<Node>();
 		q.add(node);
-		node.visited=true;
+		node.visited	= true;
 		
 		while(!q.isEmpty())
 		{
@@ -178,7 +136,7 @@ public class Main
 			{
 				if(!adj.visited)
 				{
-					adj.visited=true;
+					adj.visited = true;
 					q.add(adj);
 				}
 			}
@@ -199,7 +157,6 @@ public class Main
 		
 		return neighbors;
 	}
-	
 }
 
 class Node
@@ -211,7 +168,7 @@ class Node
 	{ this.data = data; }
 	
 	public java.lang.String toString()
-	{ return data.toString()+"["+(visited?"X":" ")+"]"; }
+	{ return data.toString()+"["+(visited?" ":"#")+"]"; }
 
 }
 
@@ -224,5 +181,4 @@ class Edge
 		this.a = a;
 		this.b = b;
 	}
-
 }
