@@ -15,16 +15,15 @@ public class Main
     static StringBuilder buffer                = new StringBuilder();
     public static HashMap<String,Node> cache   = new HashMap<String,Node>();
     static String[] line_map                   = new String[BIG_ENOUGHT_LINES];
-	static String[] relation                   = new String[BIG_ENOUGHT_LINES];
-	static int LINES_RED                       = 0;
-	static String s                            = "";
-	static String name                         = "";
-	static int current                         = 0;	
-	static Queue<Node> q                       = new LinkedList<Node>();
+    static String[] relation                   = new String[BIG_ENOUGHT_LINES];
+    static int LINES_RED                       = 0;
+    static String s                            = "";
+    static String name                         = "";
+    static int current                         = 0;	
+    static Queue<Node> q                       = new LinkedList<Node>();
 
     public static void main(String[] args) throws IOException
     {
-    	
     	bi = new BufferedReader(new InputStreamReader(System.in));
     	
         buffer.setLength(0);
@@ -38,30 +37,30 @@ public class Main
 
         try
         {
-        	slurp();
-		
-        	Node root = cache.get("all");
-        
-        	unlinked();
-        	traverse(root);
-        	circle(root);
-        	
-        	out();
+            slurp();
+
+            Node root = cache.get("all");
+
+            unlinked();
+            traverse(root);
+            circle(root);
+
+            out();
         }
         catch(FatalError e){ System.out.println("ERROR"); }
-        
     }
 
     private static void unlinked()
     {
-    	for(Node n : cache.values())
-		if(n.isDependency && !n.isDeclared) throw new FatalError();
+        for(Node n : cache.values())
+        if(n.isDependency && !n.isDeclared) throw new FatalError();
     }
+
     private static Node node(String key)
     {
-        key		= key.trim();
-        Node n	= cache.get(key);
-		
+        key     = key.trim();
+        Node n  = cache.get(key);
+
         if(n==null)
         {
             n = new Node(key);
@@ -69,8 +68,8 @@ public class Main
         }
         return n;
     }
-	
-	private static void readLine() throws FatalError
+
+    private static void readLine() throws FatalError
 	{
 		line_map[LINES_RED++] = s;
 		
