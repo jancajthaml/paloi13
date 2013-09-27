@@ -1,7 +1,6 @@
 package pal;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,38 +13,34 @@ public class Main
 	static  String newline = System.getProperty("line.separator");
 
     //static  int                   BIG_ENOUGHT_LINES       =  100000;
-    static  int                   BIG_ENOUGHT_NEIGHBOURS  =  1000;
+    static  int                   BIG_ENOUGHT_NEIGHBOURS  =  100;
     static  BufferedReader        bi                      =  new BufferedReader(new InputStreamReader(System.in));
     static  StringBuilder         buffer                  =  new StringBuilder();
     static  HashMap<String,Node>  cache                   =  new HashMap<String,Node>();
     static  ArrayList<String>     line_map                =  new ArrayList<String>();
     static  ArrayList<String>     relation                =  new ArrayList<String>();
-    static  int                   LINES_RED               =  0;
-    static  String                name                    =  "";
-    static  int                   current                 =  0;	
     static  Queue<Node>           q                       =  new LinkedList<Node>();
-    static  String                FIRST                   =  "";
     
-    static  HashSet<Node>  dependences                    =  new HashSet<Node>();
-    static  HashSet<Node>  declarations                   =  new HashSet<Node>();
-
+    static  String                FIRST;
+    static  int                   LINES_RED;
+    static  String                name;
+    static  int                   current;
+    
     static  HashSet<String> marker = new HashSet<String>();
 
     public static void main(String[] args)
     {
-    	declarations.clear();
-    	dependences.clear();
-    	line_map.clear();
-    	marker.clear();
-    	relation.clear();
-        buffer.setLength(0);
-        cache.clear();
-        q.clear();
-        LINES_RED = 0;
+    	line_map . clear();
+    	marker   . clear();
+    	relation . clear();
+        buffer   . setLength(0);
+        cache    . clear();
+        q        . clear();
+
         name      = "";
         FIRST     = "";
+        LINES_RED = 0;
         current   = 0;
-        bi        = new BufferedReader(new InputStreamReader(System.in));
     	
         try
         {
@@ -53,6 +48,8 @@ public class Main
 
             Node root = cache.get(FIRST);
 
+            if(root==null) throw new FatalError();
+            
             non_declared();
             traverse(root);
             
@@ -65,15 +62,15 @@ public class Main
 
     static boolean cycle(Node node)
     {
+    	if(node==null) return false;
+    	
     	if(marker.contains(node.data)) return true;
     	
     	marker.add(node.data);
     	
     	for(int i=0; i<node.index; i++)
     	{
-    		String name = node.link[i].data;
-    		
-    		if(!cache.containsKey(name)) return true;
+    		if(!cache.containsKey(node.link[i].data)) return true;
     		
     		if(!node.link[i].marked)
     		{
@@ -83,16 +80,18 @@ public class Main
     		}
     	}
 	
-    	marker.remove(node.data.hashCode());
+    	marker.remove(node.data);
     	return false;
     }
     
+    //OK
     private static void non_declared()
     {
-    	for(Node n : Main.dependences)
-    		if(!Main.declarations.contains(n)) throw new FatalError();
+    	for(Node n : cache.values())
+    		if(n.visited && !n.isDeclared && n.isDependency) throw new FatalError();
     }
 
+    //OK
     private static Node node(String key)
     {
         key     = key.trim();
@@ -106,49 +105,50 @@ public class Main
         return n;
     }
 
+    //FIXME breaks at ~50ms sooooo it should be somewhere there
     private static void readLine(String line)
 	{
     	
     	LINES_RED++;
         line_map.add(line);
 
-        	if(line.startsWith("\t"))
-        	{
-        		relation.add(name);
-        		//relation.set(LINES_RED-1, name);
-        	}
-        	else
-        	{
-        		if(line.indexOf(":")<=0) return;	
-                int index				= line.indexOf(":");
-                name					= line.substring(0, index);
-                
-                if(FIRST.equals("")) FIRST=name;
-                
-                String[] dependencies	= line.substring(index).split(" ");
-                Node n				    = node(name);
-				
-                Main.declarations.add(n);
-                
-                n.isDeclared = true;
-
-                for(int i=1; i<dependencies.length; i++)
-                {
-                    if(dependencies[i].isEmpty()) continue;
-                    
-                    Node m = node(dependencies[i]);
-                    n.addEdge(m);
-                    m.isDependency = true;
-                    Main.dependences.add(m);
-                }
-                relation.add(name);
+        if(line.startsWith("\t"))
+        {
+        	relation.add(name);
         }
-       
-       
-       
+        else
+        {
+        	int index				= line.indexOf(":");
+        	
+        	if(index<=0) return;
+        	
+        	name					= line.substring(0, index);
+                
+        	if(FIRST.equals("")) FIRST=name;
+            
+        	//FIXME there could be a exception
+        	String[] dependencies	= line.substring(index).split(" ");
+        	Node n				    = node(name);
+				
+        	n.isDeclared = true;
 
+        	//OK ?
+        	//if(dependencies.length>1)
+        	for(int i=1; i<dependencies.length; i++)
+        	{
+        		//OK
+        		if(dependencies[i]==null || dependencies[i].isEmpty()) continue;
+                    
+        		Node m = node(dependencies[i]);
+        		n.addEdge(m);
+        		m.isDependency = true;
+        	}
+        	
+        	relation.add(name);
+        }
     }
 
+    //OK
     public static void slurp()
     {
     	String line="";
@@ -160,7 +160,9 @@ public class Main
     	catch(Exception e){/*ignore*/}
     }
     
-    static void out() throws FatalError
+    
+    //OK
+    static void out()
     {
         buffer.setLength(0);
 
@@ -168,17 +170,24 @@ public class Main
 
         for(int i=0; i<LINES_RED; i++)
         {
+        	//FIXME there could be a exception
 			n = cache.get(relation.get(i));
+			
 			if(n==null) continue;
 
 			if(n.visited) 	buffer . append(line_map.get(i)     + newline);
 			else			buffer . append("#"+line_map.get(i) + newline);
         }
+        
         System.out.print(buffer);
     }
 
+    
 	public static void traverse(Node node) throws FatalError
 	{
+		//FIXME need?
+		if(node==null) return;
+		
 		q.clear();
 		q.add(node);
 		node.visited	= true;
@@ -195,7 +204,6 @@ public class Main
 					adj.visited = true;
 					q.add(adj);
 				}
-
 			}
 		}
 	}
