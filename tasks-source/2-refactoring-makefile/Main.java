@@ -3,70 +3,74 @@ package pal;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 public class Main
 {
-	static int BIG_ENOUGHT_LINES				= 100000;
-	static int BIG_ENOUGHT_NEIGHBOURS			= 100;
-	static BufferedReader bi					= new BufferedReader(new InputStreamReader(System.in));
-	static StringBuilder buffer					= new StringBuilder();
-	public static HashMap<String,Node> cache	= new HashMap<String,Node>();
-	static String[] line_map					= new String[BIG_ENOUGHT_LINES];
-	static String[] relation					= new String[BIG_ENOUGHT_LINES];
-	static int LINES_RED						= 0;
-	static String s								= "";
-	static String name							= "";
-	static int current							= 0;	
-	static Queue<Node> q						= new LinkedList<Node>();
+    static int BIG_ENOUGHT_LINES               = 100000;
+    static int BIG_ENOUGHT_NEIGHBOURS          = 1000;
+    static BufferedReader bi                   = new BufferedReader(new InputStreamReader(System.in));
+    static StringBuilder buffer                = new StringBuilder();
+    public static HashMap<String,Node> cache   = new HashMap<String,Node>();
+    static String[] line_map                   = new String[BIG_ENOUGHT_LINES];
+	static String[] relation                   = new String[BIG_ENOUGHT_LINES];
+	static int LINES_RED                       = 0;
+	static String s                            = "";
+	static String name                         = "";
+	static int current                         = 0;	
+	static Queue<Node> q                       = new LinkedList<Node>();
 
-	//TODO get rid of Node objects
-	//private static int[] visited				= new int[BIG_ENOUGHT_LINES];
-	
-	public static void main(String[] args) throws IOException
-	{
-		buffer.setLength(0);
-		cache.clear();
-		//edges.clear();
-		LINES_RED=0;
-		
-		s		= "";
-		name	= "";
-		current	= 0;
-		
-		slurp();
-		Node root = cache.get("all");
-		if(circle(root)) System.out.println("ERROR");
-		else
-		{
-			try
-			{
-				traverse(root);
-				out();
-			}
-			catch(FatalError e){ System.out.println("ERROR"); }
-		}
-	}
+    public static void main(String[] args) throws IOException
+    {
+    	
+    	bi = new BufferedReader(new InputStreamReader(System.in));
+    	
+        buffer.setLength(0);
+        cache.clear();
+        q.clear();
+        
+        LINES_RED = 0;
+        s         = "";
+        name      = "";
+        current   = 0;
 
-	private static Node node(String key)
-	{
-		key		= key.trim();
-		Node n	= cache.get(key);
+        try
+        {
+        	slurp();
 		
-		if(n==null)
-		{
-			n = new Node(key);
-			cache.put(key, n);
-		}
+        	Node root = cache.get("all");
+        
+        	unlinked();
+        	traverse(root);
+        	circle(root);
+        	
+        	out();
+        }
+        catch(FatalError e){ System.out.println("ERROR"); }
+        
+    }
+
+    private static void unlinked()
+    {
+    	for(Node n : cache.values())
+		if(n.isDependency && !n.isDeclared) throw new FatalError();
+    }
+    private static Node node(String key)
+    {
+        key		= key.trim();
+        Node n	= cache.get(key);
 		
-		return n;
-	}
+        if(n==null)
+        {
+            n = new Node(key);
+            cache.put(key, n);
+        }
+        return n;
+    }
 	
-	private static void readLine()
+	private static void readLine() throws FatalError
 	{
 		line_map[LINES_RED++] = s;
 		
@@ -77,74 +81,84 @@ public class Main
 				int index				= s.indexOf(":");
 				name					= s.substring(0, index);
 				String[] dependencies	= s.substring(index).split(" ");
-				Node n					= node(name);
+				Node n				    = null;
+				
+				if(!name.equals("all") && !cache.containsKey(name))
+				{
+					n = node(name);
+					n.dead=true;
+				}
+				else n = node(name);
+				
+				n.isDeclared=true;
 
 				for(int i=1; i<dependencies.length; i++)
 				{
 					if(dependencies[i].isEmpty()) continue;
 					Node m = node(dependencies[i]);
 					n.addEdge(m);
+					m.isDependency=true;
 					//edges.add(new Edge(n,m));
 				}
 				relation[LINES_RED-1]= name;
 			}
 			catch(StringIndexOutOfBoundsException e){}
 		}
-		else relation[LINES_RED-1]=name;
+		else
+		{
+			relation[LINES_RED-1]=name;
+		}
 		
 		s="";
 	}
 	
-	public static String slurp() throws UnsupportedEncodingException,IOException
+	
+	public static void slurp() throws FatalError,IOException
 	{
-		while((current = bi.read()) > -1)
-		{
-			s+=(char)current;
-				
-			if(current == '\n')
-				readLine();
-		}
-		
-		//System.err.println("s "+s);
-		//readLine();
-			
-		return s;
+		while(((s=bi.readLine()) != null) && s.length()>0)
+			readLine();
 	}
 
-	static void out()
+	static void out() throws FatalError
 	{
 		buffer.setLength(0);
 		
-		//FIXME set "#" in NODE and get rid of O(n) here
-		boolean ok	= true;
-		
-		
+		Node n = null;
 		for(int i=0; i<LINES_RED; i++)
 		{
-			ok = cache.get(relation[i]).visited;
-			if(ok) 	buffer.append(line_map[i]);
-			else	buffer.append("#"+line_map[i]);
+			n = cache.get(relation[i]);
+			
+			if(n.dead && n.visited)             throw new FatalError();
+
+			
+			if(n.visited) 	buffer.append(line_map[i]+"\n");
+			else			buffer.append("#"+line_map[i]+"\n");
 		}
-		//	buffer.append((i==0 || cache.get(relation.get(i)).visited)?(line_map[i]):("#"+line_map[i]));
 		
 		System.out.print(buffer);
 	}
-
 	
-	public static boolean circle(Node node)
+	private static void dumpLines()
+	{
+		for(int i=0; i<LINES_RED; i++)
+			System.out.println(line_map[i]);
+		
+	}
+	
+	public static void circle(Node node) throws FatalError
 	{
 		for(int i=0; i<node.index; i++)
 		{
-			Node n = node.link[i];
-			n.visited=true;
+			Node n    = node.link[i];
+			n.marked = true;
+			
 			if(circle(n,node))
 			{
-				n.visited = false;
-				return true;
+				n.marked = false;
+				throw new FatalError();
 			}
-			n.visited = false;
+			n.marked = false;
 		}
-		return false;
 	}
 	
 	public static boolean circle(Node node, Node origin)
@@ -154,16 +168,16 @@ public class Main
 		{
 			Node n = node.link[i];
 			if(n==null) continue;
-			if(origin.visited && n.visited) return true;
-			if(node.visited)
+			if(origin.marked && n.marked) return true;
+			if(node.marked && node.visited)
 			{
-				n.visited=true;
+				n.marked=true;
 				if(circle(n,node))
 				{
-					n.visited=false;
+					n.marked=false;
 					return true;
 				}
-				n.visited = false;
+				n.marked = false;
 			}
 		}
 		return false;
@@ -195,32 +209,21 @@ public class Main
 
 	static class FatalError extends RuntimeException
 	{
-		FatalError(String msg){super(msg);}
-	}
-	/*
-	public static Vector<Node> getNeighbors(Node a)
-	{
-		Vector<Node> neighbors = new Vector<Node>();
-
-		for(int i = 0; i < edges.size(); i++)
-		{
-			Edge edge = edges.elementAt(i);
-
-			if(edge.a == a)
-				neighbors.add(edge.b);
-		}
 		
-		return neighbors;
 	}
-	*/
 
 	static class Node
 	{
-		String data;
-		boolean visited;
+		String data       = "";
+		boolean visited   = false;
+		boolean marked	  = false;
+		boolean dead      = false;
+		
+		boolean isDependency = false;
+		boolean isDeclared   = false;
+		
 		private int index = 0;
-		Node[] link = new Node[BIG_ENOUGHT_NEIGHBOURS];
-		//List<Node> link = new LinkedList<Node>();
+		Node[] link       = new Node[BIG_ENOUGHT_NEIGHBOURS];
 	
 		public Node(String data)
 		{ this.data = data; }
@@ -233,7 +236,6 @@ public class Main
 
 		public boolean equals(Object another)
 		{ return ((Node)another).data == this.data; }
-		
 	}
 
 }
