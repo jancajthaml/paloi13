@@ -8,6 +8,7 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.StringTokenizer;
 
 public class Main
 {
@@ -16,7 +17,7 @@ public class Main
 
     private static  HashMap<Integer, SoftReference<Node>> cache     =  new HashMap<Integer, SoftReference<Node>>();
     private static  BufferedReader                        in        =  new BufferedReader(new InputStreamReader(System.in));
-	private static  ByteArrayOutputStream                 out       =  new ByteArrayOutputStream();
+    private static  ByteArrayOutputStream                 out       =  new ByteArrayOutputStream();
     private static  HashSet<Integer>                      marker    =  new HashSet<Integer>();
     private static  ArrayList<Integer>                    sort      =  new ArrayList<Integer>();
     private static  byte[]                                newline   =  System.getProperty("line.separator").getBytes();
@@ -40,17 +41,15 @@ public class Main
     
     static void check_cyclic_dependedcy___dead_code___non_declaration() throws FatalError
     {
-    	if( check_node(root) ) throw new FatalError();
+    	check_node(root);
     	marker.clear();
     }
 
-    static boolean check_node(Node node) throws FatalError
+    static void check_node(Node node) throws FatalError
     {
     	node . visited = true;
 
-    	if( !node.isDeclared && node.isDependency )  throw new FatalError();
-
-        if( marker.contains(node.id) ) return true;
+    	if( (!node.isDeclared && node.isDependency) || marker.contains(node.id) )  throw new FatalError();
     	
         marker . add(node.id);
     	
@@ -59,13 +58,11 @@ public class Main
             if(!n.marked)
             {
                 n.marked = true;
-                if(check_node(n)) return true;
+                check_node(n);
             }
         }
 
         marker . remove(node.id);
-
-        return false;
     }
     
     public static void read_data()
@@ -75,7 +72,6 @@ public class Main
             String[]  dependencies  =  null;
             Node      n             =  null;
             Node      m             =  null;
-            int       index         =  0;
             String    line          =  "";
             
             outer:while(true)
@@ -86,31 +82,27 @@ public class Main
                  { node(name).lines.add(line.getBytes()); }
                  else
                  {
-                     index                = line.indexOf(":");
+                     StringTokenizer st = new StringTokenizer(line," ");
 
-                     if(index<=0) continue outer;
+                     if(st.countTokens()<=0) continue outer;
 
-                     name                 = hash(line.substring(0, index));
+                     name                 = hash(st.nextToken().replaceFirst(".$",""));
                      n                    = node(name);
                      n.isDeclared         = true;
 
                      if(root==null) root  = n;
 
-                     dependencies         = line.substring(index).split(" ");
-
-                     inner:for(int i=1; i<dependencies.length; i++)
+                     while (st.hasMoreTokens())
                      {
-                         if(dependencies[i].isEmpty()) continue inner;
-                         
-                         m               = node(hash(dependencies[i]));
+                         m               = node(hash(st.nextToken()));
                          m.isDependency  = true;
-                         
                          n.addEdge(m);
                      }
+
+                     n.lines . add(line.getBytes());
+                     sort    . add(name);
                      
-                     n.lines.add(line.getBytes());
-                     
-                     sort.add(name);
+                     st = null;
                  }
              }
         }
@@ -146,9 +138,8 @@ public class Main
                 release(index);
             }
 
-      //  System.gc();
+            System.gc();
             System.out.print(out);
-        
     	}
     	catch(IOException e){ /*ignore*/ }
     }
@@ -186,6 +177,7 @@ public class Main
         public void addEdge(Node b)
         { link.add(b); }
 
+        /*
         public int hashCode()
         { return this.id; }
 
@@ -194,6 +186,7 @@ public class Main
             Node n = (Node) another;
             return (n.id)==this.id; 
         }
+        */
 
         public void destroy()
         {
