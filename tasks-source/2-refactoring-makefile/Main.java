@@ -20,11 +20,10 @@ public class Main
     private static  ByteArrayOutputStream                 out       =  new ByteArrayOutputStream();
     private static  HashSet<Integer>                      marker    =  new HashSet<Integer>();
     private static  ArrayList<Integer>                    sort      =  new ArrayList<Integer>();
-    private static  HashSet<Integer>                    names     =  new HashSet<Integer>();
     private static  byte[]                                newline   =  System.getProperty("line.separator").getBytes();
     private static  Node                                  root      =  null;
-    //private static  int                                   name      =  0;
-static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
+    private static  int                                   name      =  0;
+
     //------------------------------------------------------------------------------------//
     
     public static void main(String ... args)
@@ -35,7 +34,7 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
             check_cyclic_dependedcy___dead_code___non_declaration   ();
             flush_data                                              ();
         }
-        catch(FatalError e){ System.out.println("ERROR"+e.getMessage()); }
+        catch(FatalError e){ System.out.println("ERROR"); }
     }
     
     //------------------------------------------------------------------------------------//
@@ -50,8 +49,7 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
     {
     	node . visited = true;
 
-    	if( !node.isDeclared && node.isDependency )  throw new FatalError(" Non declared dependency "+real_name.get(node.id));
-    	if( marker.contains(node.id) )               throw new FatalError(" Cycle in dependency "+real_name.get(node.id));
+    	if( (!node.isDeclared && node.isDependency) || marker.contains(node.id) )  throw new FatalError();
     	
         marker . add(node.id);
     	
@@ -74,16 +72,13 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
             Node      n             =  null;
             Node      m             =  null;
             String    line          =  "";
-            Node      current       =  null;
             
             outer:while(true)
             {
                  line = in.readLine();
 
                  if(line.getBytes()[0] == 9)
-                 {
-                	 current.lines.add(line.getBytes());
-                 }
+                 { node(name).lines.add(line.getBytes()); }
                  else
                  {
                      StringTokenizer st = new StringTokenizer(line," ");
@@ -91,21 +86,10 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
                      if(!st.hasMoreTokens()) continue outer;
 
                      String token         = st.nextToken();
-                     int name             = hash(token.substring(0, token.length()-1));
-                     
-                     if(names.contains(name))
-                     {
-                    	 current.lines . add(("#"+line).getBytes());
-                    	 continue;
-                     }
-                     
+                     name                 = hash(token.substring(0, token.length()-1));
                      n                    = node(name);
                      n.isDeclared         = true;
-                     
-                     current              = n;
-                     
-                     names.add(name);
-                     
+
                      if(root==null) root  = n;
 
                      while (st.hasMoreTokens())
@@ -122,12 +106,11 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
                  }
              }
         }
-        catch(Exception e)      {  /*ignore*/    }
-    	finally                 { names.clear(); }
-
-        try                     { in.close();    }
-        catch (IOException e)   {  /*ignore*/    }
-        finally                 { in = null;     }
+        catch(Exception e)      {  /*ignore*/ }
+    	
+        try                     { in.close(); }
+        catch (IOException e)   {  /*ignore*/ }
+        finally                 { in = null;  }
     }
 
     static void flush_data() throws FatalError
@@ -168,10 +151,8 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
     
     static int hash(String text)
     {
-    	
     	int hash = 0;
     	for( int i=0 ; i < text.length() ; hash = (hash << 5) - hash + text.charAt(i++) );
-    	real_name.put(hash, text);
     	return hash;    	  
     }
     
@@ -179,12 +160,7 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
     // nested helpers 
     
     static class FatalError extends RuntimeException
-    {
-    	private static final long serialVersionUID = 3638938829930139263L;
-    	
-    	public FatalError(String cause)
-    	{ super(cause);	}
-    }
+    { private static final long serialVersionUID = 3638938829930139263L; }
 
     static class Node
     {
@@ -233,8 +209,7 @@ static HashMap<Integer,String> real_name = new HashMap<Integer,String>();
     	SoftReference<Node> ref   =  cache . get(key);
     	if(ref != null)     node  =  ref   . get();
     	
-    	if(node == null)
-    		cache . put( key, new SoftReference<Node>(node = new Node(key)) );
+    	if(node == null)             cache . put( key, new SoftReference<Node>(node = new Node(key)) );
     	
     	return node;   
     }
