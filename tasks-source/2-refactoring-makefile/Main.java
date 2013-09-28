@@ -8,6 +8,9 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class Main
@@ -39,8 +42,15 @@ public class Main
     //------------------------------------------------------------------------------------//
     
     static void check_cyclic_dependedcy___dead_code___non_declaration() throws FatalError
-    { check_node(root); }
+    {
+    	try                         { check_node(root); }
+    	catch(Exception e)          { check_node(last); }
+    	catch(StackOverflowError e) { check_node(last); }
+    	catch(Throwable e)          { check_node(last); }
+    }
 
+    static Node last = null;
+    
     static void check_node(Node node) throws FatalError //non-recursive approach is slower
     {
     	node . visited = true;
@@ -49,12 +59,15 @@ public class Main
     	
     	node.state     = Node.GRAY;
     	
+    	last           = node;
         for(Node n : node.link)
         {
             if(n.state==Node.BLACK) continue;
             check_node(n);
         }
-
+        
+        
+        
         node.state=Node.BLACK;
     }
     
@@ -160,6 +173,7 @@ public class Main
     	public static int WHITE = 0x01;
     	public static int GRAY  = 0x02;
     	public static int BLACK = 0x03;
+    	public static int RED = 0x04;
     	int state = WHITE;
         boolean            visited       =  false;
         boolean            marked	     =  false;
@@ -198,7 +212,7 @@ public class Main
             catch (Throwable e) { /*ignore*/        }
         }
     }
-
+    
     public static Node node(int key)
     {
     	Node node = null;
