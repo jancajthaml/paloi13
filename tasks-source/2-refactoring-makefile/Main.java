@@ -6,52 +6,43 @@ import java.io.InputStreamReader;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.TreeMap;
 
 public class Main
 {
+
+	public static HashMap<Integer, SoftReference<Node>> cache = new HashMap<Integer, SoftReference<Node>>();
 	static  String                newline                 =  System.getProperty("line.separator");
-    static  int                   BIG_ENOUGHT_NEIGHBOURS  =  3000;
+	static  int                   BIG_ENOUGHT_NEIGHBOURS  =  2500;
     static  BufferedReader        bi                      =  new BufferedReader(new InputStreamReader(System.in));
     static  StringBuilder         buffer                  =  new StringBuilder();
-    static  Cache                 cache                   =  new Cache();
-    static  ArrayList<String>     line_map                =  new ArrayList<String>();
-    static  ArrayList<Integer>    relation                =  new ArrayList<Integer>();
     static  Queue<Node>           q                       =  new LinkedList<Node>();
     static  int                   FIRST                   =  0;
-    static  String                name                    =  "";
-    
-    static  HashSet<Node> marker = new HashSet<Node>();
+    static  int                   name                    =  0;
+    static  String                line                    =  "";
+    static  int                   index                   =  0;
+    static  HashSet<Node>         marker                  =  new HashSet<Node>();
+	static ArrayList<Integer>     sort                    =  new ArrayList<Integer>();
 
     public static void main(String[] args)
     {
-    	line_map  .  clear();
-    	marker    .  clear();
-    	relation  .  clear();
-        buffer    .  setLength(0);
-        //cache     .  clear();
-        q         .  clear();
-        
-        name      =  "";
-        FIRST     =  0;
 
         try
         {
             slurp();
 
-            Node root = cache.get(FIRST);
-
+            Node root = cache.get(FIRST).get();
             non_declared();
             
             traverse(root);
-    		q.clear();
+            q.clear();
             
             if(cycle(root)) throw new FatalError();
             marker.clear();
-            
+
             out();
         }
         catch(FatalError e){ System.out.println("ERROR"); }
@@ -74,7 +65,6 @@ public class Main
     		}
     	}
 	
-    	//marker.remove(node.data.hashCode());
     	marker.remove(node);
     	return false;
     }
@@ -92,71 +82,92 @@ public class Main
     	c = null;
     }
 
-    private static Node node(String key)
-    { return cache.get(key.trim().hashCode()); }
-
-    private static void readLine(String line)
-	{
-        line_map.add(line);
-        
-        if(line.startsWith("\t"))
-        {
-        	relation.add(name.hashCode());
-        }
-        else
-        {
-        	
-        	int index				= line.indexOf(":");
-        	if(index<=0) return;
-        	name					= line.substring(0, index);
-        	
-        	if(FIRST==0) FIRST = name.hashCode();
-        	
-        	String[] dependencies	= line.substring(index).split(" ");
-        	Node n				    = node(name);
-        	n.isDeclared            = true;
-
-        	for(int i=1; i<dependencies.length; i++)
-        	{
-        		if(dependencies[i].isEmpty()) continue;
-                    
-        		Node m = node(dependencies[i]);
-        		n.addEdge(m);
-        		m.isDependency = true;
-        	}
-        	
-        	relation.add(name.hashCode());
-        }
-    }
-
     public static void slurp()
     {
-    	try						{ while(true) readLine(bi.readLine()); }
+    	try
+    	{ 
+    		String[]dependencies	= null;
+    		Node n					= null;
+    		Node m					= null;
+    		
+    		Loop:while(true)
+    		{
+    			line=bi.readLine();
+    			
+    			 if(line.toCharArray()[0]=='\t')
+    		     {
+    				 n = node(name);
+    				 n.lines.add(line.getBytes());
+    		     }
+    			 else
+    			 {
+    				 index				= line.indexOf(":");
+    		        	
+    				 if(index<=0) continue Loop;
+    				 
+    				 	name					= hash(line.substring(0, index));
+    				 	
+    				 	if(FIRST==0) FIRST=name;
+    				 	
+    		        	n				        = node(name);
+    		        	n.isDeclared            = true;
+    		        	
+    		        	dependencies	= line.substring(index).split(" ");
+    		        	
+    		        	Loop1:for(int i=1; i<dependencies.length; i++)
+    		        	{
+    		        		if(dependencies[i].isEmpty()) continue Loop1;
+    		                    
+    		        		m = node(hash(dependencies[i]));
+    		        		n.addEdge(m);
+    		        		m.isDependency = true;
+    		        	}
+    		        	n.lines.add(line.getBytes());
+    		        	sort.add(name);
+    		        }
+    		}
+    	}
     	catch(Exception e)		{/*ignore*/}
     	
     	try						{ bi.close(); }
     	catch (IOException e)	{/*ignore*/}
     	finally					{ bi = null; }
     	
-    	System.runFinalization();
-    	System.gc();
+    	//System.gc();
     }
     
     static void out() throws FatalError
     {
         buffer.setLength(0);
 
-        Node n    = null;
-        int size  = relation.size();
-        
-        for(int i=0; i<size; i++)
-        {
-			n = cache.get(relation.get(i));
-			if(n==null) continue;
+        Node n    =  null;
+	
+    	for(int a : sort)
+    	{
+    		n = node(a);
 
-			if(n.visited) 	buffer . append(line_map.get(i)     + newline);
-			else			buffer . append("#"+line_map.get(i) + newline);
-        }
+        	if(n.visited)
+        	{
+        		for(byte[] line : n.lines)
+        		{
+        			buffer.append(new String(line));
+        			buffer.append(newline);
+        		}
+        	}
+        	else
+        	{
+        		for(byte[] line : n.lines)
+        		{
+        			buffer.append("#");
+        			buffer.append(new String(line));
+        			buffer.append(newline);
+        		}
+        	}
+        	n.destroy();
+        	release(a);
+    	}
+    	
+        System.gc();
         System.out.print(buffer);
     }
 
@@ -173,6 +184,7 @@ public class Main
 			for(int i=0; i< n.index; i++)
 	        {
 	            Node adj = n.link[i];
+	            
 				if(!adj.visited)
 				{
 					adj.visited = true;
@@ -187,13 +199,14 @@ public class Main
 
     static class Node
     {
-		boolean  visited       =  false;
-		boolean  marked	       =  false;
-		boolean  isDependency  =  false;
-		boolean  isDeclared    =  false;
-		Node[]   link          =  new Node[BIG_ENOUGHT_NEIGHBOURS];
-		int      index         =  0;
-		int      id            =  0;
+		boolean               visited       =  false;
+		boolean               marked	    =  false;
+		boolean               isDependency  =  false;
+		boolean               isDeclared    =  false;
+		Node[]                link          =  new Node[BIG_ENOUGHT_NEIGHBOURS];
+		ArrayList<byte[]>     lines         =  new ArrayList<byte[]>();
+		int                   index         =  0;
+		int                   id            =  0;
 		
 		public Node(int id)
 		{ this.id = id; }
@@ -201,32 +214,36 @@ public class Main
 		public void addEdge(Node b)
 		{ link[index++] = b; }
 		
-		public boolean equals(Object other)
-		{ return ((Node)other).id==this.id; }
-		
 		public int hashCode()
 		{ return this.id; }
+		
+		public void destroy()
+		{
+			this.lines.clear();
+			this.link=null;
+			try { super.finalize(); }
+			catch (Throwable e) {/*ignore*/}
+		}
 
 	}
-
-    static class Cache
-    { 
-        private TreeMap<Integer, SoftReference<Node>> cache = new TreeMap<Integer, SoftReference<Node>>();
-
-        public Node get(int key)
-        {
-        	Node node = null;
-        	SoftReference<Node> ref = cache.get(key);
-            if(ref != null)		node = ref.get();
-            if(node == null)	cache.put(key, new SoftReference<Node>(node = new Node(key)));
-            return node;   
-        }
-
-		public Collection<SoftReference<Node>> values()
-		{ return cache.values(); }
-
-		public boolean containsKey(int id)
-		{ return cache.containsKey(id); }
-
+    
+    public static Node node(int key)
+    {
+    	Node node = null;
+    	SoftReference<Node> ref   =  cache.get(key);
+    	if(ref != null)     node  =  ref.get();
+    	if(node == null)    cache.put(key, new SoftReference<Node>(node = new Node(key)));
+    	return node;   
     }
+
+    public static void release(int key)
+    {
+    	cache.remove(key);
+    }
+    
+    static int hash( String text)
+    {
+    	return text.hashCode();
+	}
+
 }
