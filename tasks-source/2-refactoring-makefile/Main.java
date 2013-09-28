@@ -68,8 +68,7 @@ public class Main
     public static void read_data()
     {
         try
-        { 
-            String[]  dependencies  =  null;
+        {
             Node      n             =  null;
             Node      m             =  null;
             String    line          =  "";
@@ -107,11 +106,11 @@ public class Main
                  }
              }
         }
-        catch(Exception e)		{  /*ignore*/ }
+        catch(Exception e)      {  /*ignore*/ }
     	
-        try						{ in.close(); }
-        catch (IOException e)	{  /*ignore*/ }
-        finally					{ in = null;  }
+        try                     { in.close(); }
+        catch (IOException e)   {  /*ignore*/ }
+        finally                 { in = null;  }
     }
 
     static void flush_data() throws FatalError
@@ -124,14 +123,14 @@ public class Main
             {
                 n = node(index);
 
-                if(n.visited)for(byte[] line : n.lines)
+                if(n.visited)  for( byte[] line : n.lines )
                 {
                     out . write(line);
                     out . write(newline);
                 }
-                else for(byte[] line : n.lines)
+                else           for( byte[] line : n.lines )
                 {
-                    out . write((byte)35);
+                    out . write(0x23);
                     out . write(line);
                     out . write(newline);
                 }
