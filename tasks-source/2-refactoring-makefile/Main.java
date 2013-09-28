@@ -13,86 +13,89 @@ import java.util.Queue;
 
 public class Main
 {
+    
+	//------------------------------------------------------------------------------------//
+	
+    static  HashMap<Integer, SoftReference<Node>>    cache     =  new HashMap<Integer, SoftReference<Node>>();
+	static  String                                   newline   =  System.getProperty("line.separator");
+    static  BufferedReader                           in        =  new BufferedReader(new InputStreamReader(System.in));
+    static  Queue<Node>                              q         =  new LinkedList<Node>();
+    static  HashSet<Node>                            marker    =  new HashSet<Node>();
+	static  ArrayList<Integer>                       sort      =  new ArrayList<Integer>();
+	static  Node                                     FIRST     =  null;
+    static  int                                      name      =  0;
 
-	public static HashMap<Integer, SoftReference<Node>> cache = new HashMap<Integer, SoftReference<Node>>();
-	static  String                newline                 =  System.getProperty("line.separator");
-	static  int                   BIG_ENOUGHT_NEIGHBOURS  =  2500;
-    static  BufferedReader        bi                      =  new BufferedReader(new InputStreamReader(System.in));
-    static  StringBuilder         buffer                  =  new StringBuilder();
-    static  Queue<Node>           q                       =  new LinkedList<Node>();
-    static  int                   FIRST                   =  0;
-    static  int                   name                    =  0;
-    static  String                line                    =  "";
-    static  int                   index                   =  0;
-    static  HashSet<Node>         marker                  =  new HashSet<Node>();
-	static ArrayList<Integer>     sort                    =  new ArrayList<Integer>();
-
+    //------------------------------------------------------------------------------------//
+    
     public static void main(String[] args)
     {
-
         try
         {
-            slurp();
+            read_data                    ();
 
-            Node root = cache.get(FIRST).get();
-            non_declared();
-            
-            traverse(root);
+            check_for_non_declarations   ();
+            check_cyclic_dependendcy     ();
             q.clear();
             
-            if(cycle(root)) throw new FatalError();
+            find_dead_code               ();
             marker.clear();
 
-            out();
+            flush_data                   ();
         }
         catch(FatalError e){ System.out.println("ERROR"); }
     }
-
-    static boolean cycle(Node node)
-    {
-    	if(marker.contains(node)) return true;
-    	
-    	marker.add(node);
-    	
-    	for(int i=0; i<node.index; i++)
-    	{
-    		if(!cache.containsKey(node.link[i].id)) return true;
-    		
-    		if(!node.link[i].marked)
-    		{
-    			node.link[i].marked = true;
-    			if(cycle(node.link[i])) return true;
-    		}
-    	}
-	
-    	marker.remove(node);
-    	return false;
-    }
     
-    private static void non_declared()
+    //------------------------------------------------------------------------------------//
+    
+    static void check_cyclic_dependendcy() throws FatalError
+    { if(cyclic_dependendcy(FIRST)) throw new FatalError(); }
+
+    static boolean cyclic_dependendcy(Node node)
     {
-    	Collection<SoftReference<Node>> c = cache.values();
+        if(marker.contains(node)) return true;
     	
-    	for(SoftReference<Node> node : c)
-    	{
-    		Node n = node.get();
-    		if(!n.isDeclared && n.isDependency)  throw new FatalError();
-    	}
+        marker.add(node);
     	
-    	c = null;
+        for(Node n : node.link)
+        {
+            if(!cache.containsKey(n.id)) return true;
+    		
+            if(!n.marked)
+            {
+                n.marked = true;
+                if(cyclic_dependendcy(n)) return true;
+            }
+        }
+
+        marker.remove(node);
+        return false;
     }
 
-    public static void slurp()
+    private static void check_for_non_declarations()
     {
-    	try
-    	{ 
-    		String[]dependencies	= null;
-    		Node n					= null;
-    		Node m					= null;
-    		
-    		Loop:while(true)
-    		{
-    			line=bi.readLine();
+        Collection<SoftReference<Node>> c = cache.values();
+    	
+        for(SoftReference<Node> node : c)
+        {
+            Node n = node.get();
+            if(!n.isDeclared && n.isDependency)  throw new FatalError();
+        }
+
+        c = null;
+    }
+
+    public static void read_data()
+    {
+        try
+        { 
+            String[]dependencies	= null;
+            Node n					= null;
+            Node m					= null;
+            int index               = 0;
+            String line             = "";
+            outer:while(true)
+            {
+    			line = in.readLine();
     			
     			 if(line.toCharArray()[0]=='\t')
     		     {
@@ -103,20 +106,19 @@ public class Main
     			 {
     				 index				= line.indexOf(":");
     		        	
-    				 if(index<=0) continue Loop;
+    				 if(index<=0) continue outer;
     				 
     				 	name					= hash(line.substring(0, index));
-    				 	
-    				 	if(FIRST==0) FIRST=name;
-    				 	
     		        	n				        = node(name);
     		        	n.isDeclared            = true;
     		        	
+    		        	if(FIRST==null) FIRST=n;
+    		        	
     		        	dependencies	= line.substring(index).split(" ");
     		        	
-    		        	Loop1:for(int i=1; i<dependencies.length; i++)
+    		        	inner:for(int i=1; i<dependencies.length; i++)
     		        	{
-    		        		if(dependencies[i].isEmpty()) continue Loop1;
+    		        		if(dependencies[i].isEmpty()) continue inner;
     		                    
     		        		m = node(hash(dependencies[i]));
     		        		n.addEdge(m);
@@ -127,64 +129,62 @@ public class Main
     		        }
     		}
     	}
-    	catch(Exception e)		{/*ignore*/}
+    	catch(Exception e)		{  /*ignore*/ }
     	
-    	try						{ bi.close(); }
-    	catch (IOException e)	{/*ignore*/}
-    	finally					{ bi = null; }
-    	
-    	//System.gc();
+    	try						{ in.close(); }
+    	catch (IOException e)	{  /*ignore*/ }
+    	finally					{ in = null;  }
     }
     
-    static void out() throws FatalError
+    static void flush_data() throws FatalError
     {
-        buffer.setLength(0);
+    	StringBuilder buffer  =  new StringBuilder();
+        Node n                =  null;
 
-        Node n    =  null;
-	
-    	for(int a : sort)
-    	{
-    		n = node(a);
+        for(int a : sort)
+        {
+            n = node(a);
 
-        	if(n.visited)
-        	{
-        		for(byte[] line : n.lines)
-        		{
-        			buffer.append(new String(line));
-        			buffer.append(newline);
-        		}
-        	}
-        	else
-        	{
-        		for(byte[] line : n.lines)
-        		{
-        			buffer.append("#");
-        			buffer.append(new String(line));
-        			buffer.append(newline);
-        		}
-        	}
-        	n.destroy();
+            if(n.visited)
+            {
+                for(byte[] line : n.lines)
+                {
+                    buffer.append(new String(line));
+                    buffer.append(newline);
+                }
+            }
+            else
+            {
+                for(byte[] line : n.lines)
+                {
+                    buffer.append("#");
+                    buffer.append(new String(line));
+                    buffer.append(newline);
+                }
+            }
+        	
+            n.destroy();
         	release(a);
-    	}
-    	
+        }
+
         System.gc();
         System.out.print(buffer);
     }
 
-	public static void traverse(Node node) throws FatalError
-	{
+    public static void find_dead_code()
+    {
 		q.clear();
-		q.add(node);
-		node.visited	= true;
-		
-		while( !q.isEmpty() )
-		{
-			Node n = q.poll();
+		q.add(FIRST);
 
-			for(int i=0; i< n.index; i++)
+		FIRST.visited = true;
+
+	    while( !q.isEmpty() )
+	    {
+	        Node n = q.poll();
+
+			for(Node adj : n.link)
 	        {
-	            Node adj = n.link[i];
-	            
+
 				if(!adj.visited)
 				{
 					adj.visited = true;
@@ -194,25 +194,34 @@ public class Main
 		}
 	}
 
+    static void release(int key)
+    { cache.remove(key); }
+    
+    static int hash( String text)
+    { return text.hashCode(); }
+    
+    //------------------------------------------------------------------------------------//
+    // nested helpers 
+    
     static class FatalError extends RuntimeException
     { private static final long serialVersionUID = 3638938829930139263L; }
 
     static class Node
     {
-		boolean               visited       =  false;
-		boolean               marked	    =  false;
-		boolean               isDependency  =  false;
-		boolean               isDeclared    =  false;
-		Node[]                link          =  new Node[BIG_ENOUGHT_NEIGHBOURS];
-		ArrayList<byte[]>     lines         =  new ArrayList<byte[]>();
-		int                   index         =  0;
-		int                   id            =  0;
+		boolean            visited       =  false;
+		boolean            marked	     =  false;
+		boolean            isDependency  =  false;
+		boolean            isDeclared    =  false;
+		ArrayList<Node>    link          =  new ArrayList<Node>();
+		ArrayList<byte[]>  lines         =  new ArrayList<byte[]>();
+		int                index         =  0;
+		int                id            =  0;
 		
 		public Node(int id)
 		{ this.id = id; }
 	
 		public void addEdge(Node b)
-		{ link[index++] = b; }
+		{ link.add(b); }
 		
 		public int hashCode()
 		{ return this.id; }
@@ -220,9 +229,13 @@ public class Main
 		public void destroy()
 		{
 			this.lines.clear();
-			this.link=null;
-			try { super.finalize(); }
-			catch (Throwable e) {/*ignore*/}
+			this.link.clear();
+			
+			this.lines = null;
+			this.link  = null;
+			
+			try                 { super.finalize(); }
+			catch (Throwable e) { /*ignore*/        }
 		}
 
 	}
@@ -235,15 +248,7 @@ public class Main
     	if(node == null)    cache.put(key, new SoftReference<Node>(node = new Node(key)));
     	return node;   
     }
-
-    public static void release(int key)
-    {
-    	cache.remove(key);
-    }
     
-    static int hash( String text)
-    {
-    	return text.hashCode();
-	}
+    //------------------------------------------------------------------------------------//
 
 }
