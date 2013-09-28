@@ -18,7 +18,6 @@ public class Main
     private static  HashMap<Integer, SoftReference<Node>> cache     =  new HashMap<Integer, SoftReference<Node>>();
     private static  BufferedReader                        in        =  new BufferedReader(new InputStreamReader(System.in));
     private static  ByteArrayOutputStream                 out       =  new ByteArrayOutputStream();
-    private static  HashSet<Integer>                      marker    =  new HashSet<Integer>();
     private static  ArrayList<Integer>                    sort      =  new ArrayList<Integer>();
     private static  byte[]                                newline   =  System.getProperty("line.separator").getBytes();
     private static  Node                                  root      =  null;
@@ -40,29 +39,23 @@ public class Main
     //------------------------------------------------------------------------------------//
     
     static void check_cyclic_dependedcy___dead_code___non_declaration() throws FatalError
-    {
-    	check_node(root);
-    	marker.clear();
-    }
+    { check_node(root); }
 
-    static void check_node(Node node) throws FatalError
+    static void check_node(Node node) throws FatalError //non-recursive approach is slower
     {
     	node . visited = true;
 
-    	if( (!node.isDeclared && node.isDependency) || marker.contains(node.id) )  throw new FatalError();
+    	if( (!node.isDeclared && node.isDependency) || node.state==Node.GRAY )  throw new FatalError();
     	
-        marker . add(node.id);
+    	node.state     = Node.GRAY;
     	
         for(Node n : node.link)
         {
-            if(!n.marked)
-            {
-                n.marked = true;
-                check_node(n);
-            }
+            if(n.state==Node.BLACK) continue;
+            check_node(n);
         }
 
-        marker . remove(node.id);
+        node.state=Node.BLACK;
     }
     
     public static void read_data()
@@ -164,6 +157,10 @@ public class Main
 
     static class Node
     {
+    	public static int WHITE = 0x01;
+    	public static int GRAY  = 0x02;
+    	public static int BLACK = 0x03;
+    	int state = WHITE;
         boolean            visited       =  false;
         boolean            marked	     =  false;
         boolean            isDependency  =  false;
