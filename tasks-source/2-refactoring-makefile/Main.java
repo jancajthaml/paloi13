@@ -1,6 +1,7 @@
 package pal;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ref.SoftReference;
@@ -14,16 +15,17 @@ public class Main
     //------------------------------------------------------------------------------------//
 
     private static  HashMap<Integer, SoftReference<Node>> cache     =  new HashMap<Integer, SoftReference<Node>>();
-    private static  String                                newline   =  System.getProperty("line.separator");
     private static  BufferedReader                        in        =  new BufferedReader(new InputStreamReader(System.in));
+	private static  ByteArrayOutputStream                 out       =  new ByteArrayOutputStream();
     private static  HashSet<Integer>                      marker    =  new HashSet<Integer>();
     private static  ArrayList<Integer>                    sort      =  new ArrayList<Integer>();
+    private static  byte[]                                newline   =  System.getProperty("line.separator").getBytes();
     private static  Node                                  root      =  null;
     private static  int                                   name      =  0;
 
     //------------------------------------------------------------------------------------//
     
-    public static void main(String[] args)
+    public static void main(String ... args)
     {
         try
         {
@@ -38,19 +40,19 @@ public class Main
     
     static void check_cyclic_dependedcy___dead_code___non_declaration() throws FatalError
     {
-    	if(check_node(root)) throw new FatalError();
+    	if( check_node(root) ) throw new FatalError();
     	marker.clear();
     }
 
     static boolean check_node(Node node) throws FatalError
     {
-    	node.visited = true;
+    	node . visited = true;
 
-    	if(!node.isDeclared && node.isDependency)  throw new FatalError();
+    	if( !node.isDeclared && node.isDependency )  throw new FatalError();
 
-        if(marker.contains(node.id)) return true;
+        if( marker.contains(node.id) ) return true;
     	
-        marker.add(node.id);
+        marker . add(node.id);
     	
         for(Node n : node.link)
         {
@@ -61,7 +63,8 @@ public class Main
             }
         }
 
-        marker.remove(node.id);
+        marker . remove(node.id);
+
         return false;
     }
     
@@ -79,30 +82,30 @@ public class Main
             {
                  line = in.readLine();
 
-                 if(line.toCharArray()[0]=='\t')
-                 {
-                     node(name).lines.add(line.getBytes());
-                 }
+                 if(line.getBytes()[0] == 9)
+                 { node(name).lines.add(line.getBytes()); }
                  else
                  {
-                     index				= line.indexOf(":");
+                     index                = line.indexOf(":");
 
                      if(index<=0) continue outer;
 
-                     name					= hash(line.substring(0, index));
-                     n				        = node(name);
-                     n.isDeclared            = true;
+                     name                 = hash(line.substring(0, index));
+                     n                    = node(name);
+                     n.isDeclared         = true;
 
-                     if(root==null) root=n;
+                     if(root==null) root  = n;
 
-                     dependencies	= line.substring(index).split(" ");
+                     dependencies         = line.substring(index).split(" ");
 
                      inner:for(int i=1; i<dependencies.length; i++)
                      {
                          if(dependencies[i].isEmpty()) continue inner;
-                         m = node(hash(dependencies[i]));
+                         
+                         m               = node(hash(dependencies[i]));
+                         m.isDependency  = true;
+                         
                          n.addEdge(m);
-                         m.isDependency = true;
                      }
                      
                      n.lines.add(line.getBytes());
@@ -120,36 +123,34 @@ public class Main
 
     static void flush_data() throws FatalError
     {
-        StringBuilder buffer  =  new StringBuilder();
-        Node n                =  null;
+    	try
+    	{
+            Node n  =  null;
 
-        for(int a : sort)
-        {
-            n = node(a);
-
-            if(n.visited)
+            for(int index : sort)
             {
-                for(byte[] line : n.lines)
-                {
-                    buffer.append(new String(line));
-                    buffer.append(newline);
-                }
-            }
-            else
-            {
-                for(byte[] line : n.lines)
-                {
-                    buffer.append("#");
-                    buffer.append(new String(line));
-                    buffer.append(newline);
-                }
-            }
+                n = node(index);
 
-            release(a);
-        }
+                if(n.visited)for(byte[] line : n.lines)
+                {
+                    out . write(line);
+                    out . write(newline);
+                }
+                else for(byte[] line : n.lines)
+                {
+                    out . write((byte)35);
+                    out . write(line);
+                    out . write(newline);
+                }
+
+                release(index);
+            }
 
       //  System.gc();
-        System.out.print(buffer);
+            System.out.print(out);
+        
+    	}
+    	catch(IOException e){ /*ignore*/ }
     }
 
     static void release(int key)
@@ -158,7 +159,7 @@ public class Main
     static int hash(String text)
     {
     	int hash = 0;
-    	for(int i=0;i<text.length(); hash = (hash << 5) - hash + text.charAt(i++));
+    	for( int i=0 ; i < text.length() ; hash = (hash << 5) - hash + text.charAt(i++) );
     	return hash;    	  
     }
     
@@ -196,8 +197,8 @@ public class Main
 
         public void destroy()
         {
-            this.lines.clear();
-            this.link.clear();
+            this.lines . clear();
+            this.link  . clear();
 
             this.lines = null;
             this.link  = null;
@@ -211,10 +212,10 @@ public class Main
     {
     	Node node = null;
     	
-    	SoftReference<Node> ref   =  cache.get(key);
-    	if(ref != null)     node  =  ref.get();
+    	SoftReference<Node> ref   =  cache . get(key);
+    	if(ref != null)     node  =  ref   . get();
     	
-    	if(node == null)    cache.put(key, new SoftReference<Node>(node = new Node(key)));
+    	if(node == null)             cache . put( key, new SoftReference<Node>(node = new Node(key)) );
     	
     	return node;   
     }
