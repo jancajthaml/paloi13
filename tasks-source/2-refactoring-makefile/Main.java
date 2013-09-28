@@ -84,9 +84,10 @@ public class Main
                  {
                      StringTokenizer st = new StringTokenizer(line," ");
 
-                     if(st.countTokens()<=0) continue outer;
+                     if(!st.hasMoreTokens()) continue outer;
 
-                     name                 = hash(st.nextToken().replaceFirst(".$",""));
+                     String token         = st.nextToken();
+                     name                 = hash(token.substring(0, token.length()-1));
                      n                    = node(name);
                      n.isDeclared         = true;
 
