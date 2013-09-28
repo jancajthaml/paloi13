@@ -13,16 +13,16 @@ import java.util.Queue;
 
 public class Main
 {
-    
-	//------------------------------------------------------------------------------------//
-	
+
+    //------------------------------------------------------------------------------------//
+
     static  HashMap<Integer, SoftReference<Node>>    cache     =  new HashMap<Integer, SoftReference<Node>>();
-	static  String                                   newline   =  System.getProperty("line.separator");
+    static  String                                   newline   =  System.getProperty("line.separator");
     static  BufferedReader                           in        =  new BufferedReader(new InputStreamReader(System.in));
     static  Queue<Node>                              q         =  new LinkedList<Node>();
     static  HashSet<Node>                            marker    =  new HashSet<Node>();
-	static  ArrayList<Integer>                       sort      =  new ArrayList<Integer>();
-	static  Node                                     FIRST     =  null;
+    static  ArrayList<Integer>                       sort      =  new ArrayList<Integer>();
+    static  Node                                     FIRST     =  null;
     static  int                                      name      =  0;
 
     //------------------------------------------------------------------------------------//
@@ -34,12 +34,9 @@ public class Main
             read_data                    ();
 
             check_for_non_declarations   ();
-            check_cyclic_dependendcy     ();
-            q.clear();
-            
             find_dead_code               ();
-            marker.clear();
-
+            check_cyclic_dependendcy     ();
+            
             flush_data                   ();
         }
         catch(FatalError e){ System.out.println("ERROR"); }
@@ -48,22 +45,27 @@ public class Main
     //------------------------------------------------------------------------------------//
     
     static void check_cyclic_dependendcy() throws FatalError
-    { if(cyclic_dependendcy(FIRST)) throw new FatalError(); }
-
-    static boolean cyclic_dependendcy(Node node)
     {
-        if(marker.contains(node)) return true;
+    	if(cyclic_dependency(FIRST))
+    	{
+    		marker.clear();
+    		throw new FatalError();
+    	}
+    	marker.clear();
+    }
+
+    static boolean cyclic_dependency(Node node)
+    {
+        if(marker.contains(node) && node.visited) return true;
     	
         marker.add(node);
     	
         for(Node n : node.link)
         {
-            if(!cache.containsKey(n.id)) return true;
-    		
             if(!n.marked)
             {
                 n.marked = true;
-                if(cyclic_dependendcy(n)) return true;
+                if(cyclic_dependency(n)) return true;
             }
         }
 
@@ -184,7 +186,6 @@ public class Main
 
 			for(Node adj : n.link)
 	        {
-
 				if(!adj.visited)
 				{
 					adj.visited = true;
@@ -192,13 +193,21 @@ public class Main
 				}
 			}
 		}
+	    q.clear();
 	}
 
     static void release(int key)
     { cache.remove(key); }
     
-    static int hash( String text)
-    { return text.hashCode(); }
+    static int hash(String text)
+    {
+    	int hash = 0;
+    	 
+    	for(int i=0;i<text.length();i++)
+    		hash = (hash << 5) - hash + text.charAt(i);
+    	
+    	return hash;
+    }
     
     //------------------------------------------------------------------------------------//
     // nested helpers 
@@ -226,6 +235,12 @@ public class Main
 		public int hashCode()
 		{ return this.id; }
 		
+		public boolean equals(Object another)
+		{
+			Node n = (Node) another;
+			return (n.id)==this.id; 
+		}
+		
 		public void destroy()
 		{
 			this.lines.clear();
@@ -245,7 +260,7 @@ public class Main
     	Node node = null;
     	SoftReference<Node> ref   =  cache.get(key);
     	if(ref != null)     node  =  ref.get();
-    	if(node == null)    cache.put(key, new SoftReference<Node>(node = new Node(key)));
+    	if(node == null)	cache.put(key, new SoftReference<Node>(node = new Node(key)));
     	return node;   
     }
     
