@@ -5,23 +5,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 
 public class Main
 {
 
     //------------------------------------------------------------------------------------//
 
-    static  HashMap<Integer, SoftReference<Node>>    cache     =  new HashMap<Integer, SoftReference<Node>>();
+    static  HashMap<Integer, SoftReference<Node>>    cache     =  new HashMap<Integer, SoftReference<Node>>(15000);
     static  String                                   newline   =  System.getProperty("line.separator");
     static  BufferedReader                           in        =  new BufferedReader(new InputStreamReader(System.in));
-    static  Queue<Node>                              q         =  new LinkedList<Node>();
-    static  HashSet<Node>                            marker    =  new HashSet<Node>();
-    static  ArrayList<Integer>                       sort      =  new ArrayList<Integer>();
+    static  HashSet<Node>                            marker    =  new HashSet<Node>(15000);
+    static  ArrayList<Integer>                       sort      =  new ArrayList<Integer>(15000);
     static  Node                                     FIRST     =  null;
     static  int                                      name      =  0;
 
@@ -31,22 +27,20 @@ public class Main
     {
         try
         {
-            read_data                    ();
+            read_data                                                  ();
 
-            check_for_non_declarations   ();
-            find_dead_code               ();
-            check_cyclic_dependendcy     ();
+            check_cyclic_dependendcy___dead_code___non_declaration     ();
             
-            flush_data                   ();
+            flush_data                                                 ();
         }
         catch(FatalError e){ System.out.println("ERROR"); }
     }
     
     //------------------------------------------------------------------------------------//
     
-    static void check_cyclic_dependendcy() throws FatalError
+    static void check_cyclic_dependendcy___dead_code___non_declaration() throws FatalError
     {
-    	if(cyclic_dependency(FIRST))
+    	if(check_node(FIRST))
     	{
     		marker.clear();
     		throw new FatalError();
@@ -54,9 +48,13 @@ public class Main
     	marker.clear();
     }
 
-    static boolean cyclic_dependency(Node node)
+    static boolean check_node(Node node) throws FatalError
     {
-        if(marker.contains(node) && node.visited) return true;
+    	node.visited=true;
+        if(!node.isDeclared && node.isDependency)  throw new FatalError();
+
+    	//if(!node.visited) return false;
+        if(marker.contains(node)) return true;
     	
         marker.add(node);
     	
@@ -65,27 +63,14 @@ public class Main
             if(!n.marked)
             {
                 n.marked = true;
-                if(cyclic_dependency(n)) return true;
+                if(check_node(n)) return true;
             }
         }
 
         marker.remove(node);
         return false;
     }
-
-    private static void check_for_non_declarations()
-    {
-        Collection<SoftReference<Node>> c = cache.values();
-    	
-        for(SoftReference<Node> node : c)
-        {
-            Node n = node.get();
-            if(!n.isDeclared && n.isDependency)  throw new FatalError();
-        }
-
-        c = null;
-    }
-
+    
     public static void read_data()
     {
         try
@@ -173,29 +158,6 @@ public class Main
         System.out.print(buffer);
     }
 
-    public static void find_dead_code()
-    {
-		q.clear();
-		q.add(FIRST);
-
-		FIRST.visited = true;
-
-	    while( !q.isEmpty() )
-	    {
-	        Node n = q.poll();
-
-			for(Node adj : n.link)
-	        {
-				if(!adj.visited)
-				{
-					adj.visited = true;
-					q.add(adj);
-				}
-			}
-		}
-	    q.clear();
-	}
-
     static void release(int key)
     { cache.remove(key); }
     
@@ -207,6 +169,8 @@ public class Main
     		hash = (hash << 5) - hash + text.charAt(i);
     	
     	return hash;
+    	
+    	  
     }
     
     //------------------------------------------------------------------------------------//
