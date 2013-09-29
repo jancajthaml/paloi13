@@ -1,4 +1,4 @@
-package pal;
+package task2;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -151,9 +151,7 @@ public class Main
     }
 
     static void release(int key)
-    {
-    	cache.remove(key).get().destroy();
-    }
+    { cache.remove(key).get().destroy(); }
     
     static int hash(String text)
     {
@@ -170,19 +168,19 @@ public class Main
 
     static class Node
     {
-    	public static int WHITE = 0x01;
-    	public static int GRAY  = 0x02;
-    	public static int BLACK = 0x03;
-    	public static int RED = 0x04;
-    	int state = WHITE;
-        boolean            visited       =  false;
-        boolean            marked	     =  false;
-        boolean            isDependency  =  false;
-        boolean            isDeclared    =  false;
-        ArrayList<Node>    link          =  new ArrayList<Node>();
-        ArrayList<byte[]>  lines         =  new ArrayList<byte[]>();
-        int                index         =  0;
-        int                id            =  0;
+        public  static  int  WHITE         = 0x01;
+        public  static  int  GRAY          = 0x02;
+        public  static  int  BLACK         = 0x03;
+
+    	int                  state         =  WHITE;
+        boolean              visited       =  false;
+        boolean              marked        =  false;
+        boolean              isDependency  =  false;
+        boolean              isDeclared    =  false;
+        ArrayList<Node>      link          =  new ArrayList<Node>();
+        ArrayList<byte[]>    lines         =  new ArrayList<byte[]>();
+        int                  index         =  0;
+        int                  id            =  0;
 
         public Node(int id)
         { this.id = id; }
@@ -194,12 +192,8 @@ public class Main
         { return this.id; }
 
         public boolean equals(Object another)
-        {
-            Node n = (Node) another;
-            return (n.id)==this.id; 
-        }
+        { return (((Node) another).id)==this.id; }
         
-
         public void destroy()
         {
             this.lines . clear();
