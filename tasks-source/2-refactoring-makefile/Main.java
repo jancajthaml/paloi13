@@ -1,4 +1,4 @@
-package task2;
+package pal;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -7,10 +7,6 @@ import java.io.InputStreamReader;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class Main
@@ -43,14 +39,10 @@ public class Main
     
     static void check_cyclic_dependedcy___dead_code___non_declaration() throws FatalError
     {
-    	try                         { check_node(root); }
-    	catch(Exception e)          { check_node(last); }
-    	catch(StackOverflowError e) { check_node(last); }
-    	catch(Throwable e)          { check_node(last); }
+    	try                         { check_node(root);       }
+    	catch(Throwable e)          { throw new FatalError(); }
     }
 
-    static Node last = null;
-    
     static void check_node(Node node) throws FatalError //non-recursive approach is slower
     {
     	node . visited = true;
@@ -59,16 +51,13 @@ public class Main
     	
     	node.state     = Node.GRAY;
     	
-    	last           = node;
         for(Node n : node.link)
         {
-            if(n.state==Node.BLACK) continue;
+            if(n.state == Node.BLACK) continue;
             check_node(n);
         }
         
-        
-        
-        node.state=Node.BLACK;
+        node.state     = Node.BLACK;
     }
     
     public static void read_data()
@@ -142,10 +131,12 @@ public class Main
                 }
 
                 release(index);
+                System.out.print(out);
+                out.reset();
             }
 
             System.gc();
-            System.out.print(out);
+            
     	}
     	catch(IOException e){ /*ignore*/ }
     }
@@ -196,14 +187,14 @@ public class Main
         
         public void destroy()
         {
-            this.lines . clear();
-            this.link  . clear();
+        	this.lines . clear();
+        	this.link  . clear();
 
             this.lines = null;
             this.link  = null;
 			
-            try                 { super.finalize(); }
-            catch (Throwable e) { /*ignore*/        }
+           // try                 { super.finalize(); }
+            //catch (Throwable e) { /*ignore*/        }
         }
     }
     
