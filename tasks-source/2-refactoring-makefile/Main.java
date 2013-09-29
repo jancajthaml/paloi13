@@ -43,21 +43,21 @@ public class Main
     	catch(Throwable e)          { throw new FatalError(); }
     }
 
-    static void check_node(Node node) throws FatalError //non-recursive approach is slower
+    static void check_node(Node node) throws FatalError
     {
     	node . visited = true;
 
-    	if( (!node.isDeclared && node.isDependency) || node.state==Node.GRAY )  throw new FatalError();
+    	if( (((node.isDeclared & node.isDependency) ^ node.isDependency)) || node.state == 0x02 )  throw new FatalError();
     	
-    	node.state     = Node.GRAY;
+    	node.state     = 0x02;
     	
         for(Node n : node.link)
         {
-            if(n.state == Node.BLACK) continue;
+            if(n.state == 0x03) continue;
             check_node(n);
         }
         
-        node.state     = Node.BLACK;
+        node.state     = 0x03;
     }
     
     public static void read_data()
@@ -159,19 +159,19 @@ public class Main
 
     static class Node
     {
-        public  static  int  WHITE         = 0x01;
-        public  static  int  GRAY          = 0x02;
-        public  static  int  BLACK         = 0x03;
+        //static  byte       WHITE         =  0x01;
+        //static  byte       GRAY          =  0x02;
+        //static  byte       BLACK         =  0x03;
 
-    	int                  state         =  WHITE;
-        boolean              visited       =  false;
-        boolean              marked        =  false;
-        boolean              isDependency  =  false;
-        boolean              isDeclared    =  false;
-        ArrayList<Node>      link          =  new ArrayList<Node>();
-        ArrayList<byte[]>    lines         =  new ArrayList<byte[]>();
-        int                  index         =  0;
-        int                  id            =  0;
+    	byte               state         =  0x00;
+        boolean            visited       =  false;
+        boolean            marked        =  false;
+        boolean            isDependency  =  false;
+        boolean            isDeclared    =  false;
+        ArrayList<Node>    link          =  new ArrayList<Node>();
+        ArrayList<byte[]>  lines         =  new ArrayList<byte[]>();
+        int                index         =  0;
+        int                id            =  0;
 
         public Node(int id)
         { this.id = id; }
@@ -187,14 +187,11 @@ public class Main
         
         public void destroy()
         {
-        	this.lines . clear();
-        	this.link  . clear();
+            this.lines . clear();
+            this.link  . clear();
 
             this.lines = null;
             this.link  = null;
-			
-           // try                 { super.finalize(); }
-            //catch (Throwable e) { /*ignore*/        }
         }
     }
     
@@ -205,7 +202,7 @@ public class Main
     	SoftReference<Node> ref   =  cache . get(key);
     	if(ref != null)     node  =  ref   . get();
     	
-    	if(node == null)             cache . put( key, new SoftReference<Node>(node = new Node(key)) );
+    	if(node == null)             cache . put( key, new SoftReference<Node>( node = new Node(key) ));
     	
     	return node;   
     }
