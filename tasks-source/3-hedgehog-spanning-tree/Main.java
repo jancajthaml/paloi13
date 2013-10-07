@@ -1,150 +1,147 @@
+
 package pal;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 
-public class Main
-{
-
-	static BufferedReader bi		= new BufferedReader(new InputStreamReader(System.in));
-	static int[] weight_matrix		= null;
-	static int number_of_nodes		= 0;
-	static int cardinality_of_A		= 0;
-	static Vector<Integer> A		= null;
-	static int constant_K			= 0;
-	static Edge[] edges				= null;
+public final class Main
+{  
+	static HashMap<Integer,ArrayList<Edge>> list	= new HashMap<Integer,ArrayList<Edge>>();
+	static  BufferedReader   bi    	 				= new BufferedReader(new InputStreamReader(System.in));
 	
-	public static void main(String[] args) throws NumberFormatException, IOException
-	{
-		weight_matrix		= null;
-		number_of_nodes		= 0;
-		cardinality_of_A	= 0;
-		A					= new Vector<Integer>();
-		int counter			= 0;
-		number_of_nodes		= Integer.valueOf(bi.readLine());
-		weight_matrix		= new int[number_of_nodes*number_of_nodes];
-		
-		for(int i=0; i<number_of_nodes; i++)
+	static int size									= 0;
+	static List<Integer> A							= null;
+	static int K									= 0;
+	static int result								= 0;
+	
+    public static void main (String[] args) throws NumberFormatException, IOException
+    {	
+		try
 		{
-			String[] split = bi.readLine().split(" ");
-
-			for(String s : split)
+			read_data	();
+			find_mst	();
+		}
+		catch(FatalError r)	{ result = -1;					}
+		finally				{ System.out.println(result);	}
+    }
+	
+    static void read_data() throws FatalError
+    {
+    	try								{ size	= Integer.valueOf(bi.readLine());	}
+    	catch (NumberFormatException e)	{ throw new FatalError();					}
+    	catch (IOException e)			{ throw new FatalError();					}
+    	
+		for (int i = 1; i <= size; i++) list.put(i,new ArrayList<Edge>());
+		
+		int number	= 0;
+		int p		= 0;
+		
+		for (int i = 1; i <= size; i++)
+		{
+			StringTokenizer st  =  null;
+			try								{ st = new StringTokenizer(bi.readLine()," ");	}
+	    	catch (NumberFormatException e)	{ throw new FatalError();						}
+	    	catch (IOException e)			{ throw new FatalError();						}
+	    	
+			
+			for (int j = 1; j <= i; j++)
 			{
-				if(s.equalsIgnoreCase("")) continue;
-				weight_matrix[counter++]=Integer.valueOf(s);
+				number = Integer.valueOf(st.nextToken());
+				if (number != 0)
+				{
+					DataStorage.edges.add(new Edge(p, i, j, number));
+					list.get(i).add(new Edge(p, i, j, number));
+					list.get(j).add(new Edge(p, j, i, number));
+					p++;
+				}
 			}
 		}
 		
-		String[] split = bi.readLine().split("  ");
-		
-		cardinality_of_A= Integer.valueOf(split[0]);
-		
-		for(String s : split[1].split(" "))
+		for (int i = 1; i <= list.size(); i++)
+			Collections.sort(list.get(i));
+	
+		try
 		{
-			A.add(new Integer(Integer.valueOf(s)));
+			String[] split = bi.readLine().split("  ");
+		
+			A = new ArrayList<Integer>();
 
+			for(String s : split[1].split(" "))
+				A.add(Integer.valueOf(s));
+		
+			K = Integer.valueOf(bi.readLine());        
 		}
-		
-		constant_K	= Integer.valueOf(bi.readLine());
-
-		//out();
-	
-		create();
-        System.out.println(printEdges());
-		
-        //FIXME speed test
-	//	System.out.println("0");
-    }
-	
-
-
-    public static void create()
-    {
-        edges			= new Edge[((Main.number_of_nodes) * (Main.number_of_nodes - 1)) >> 1];
-        Node[] nodes	= new Node[Main.number_of_nodes];
-        
-        for (int i = 0; i < nodes.length; i++)
-            nodes[i] = new Node( i);
-        
-        int counter = 0;
-        
-        for (int i = 0; i < Main.number_of_nodes; i++)
-        for (int j = 0; j < i; j++)
-        	edges[counter++] = new Edge(nodes[i], nodes[j], weight_matrix[j+(number_of_nodes*i)]);
+    	catch (NumberFormatException e)	{ throw new FatalError();									}
+    	catch (IOException e)			{ throw new FatalError();									}
+    	finally							{ if(DataStorage.edges.size()==0) throw new FatalError();	}
     }
     
-    public static String printEdges()
-    {
-    	StringBuffer sb = new StringBuffer();
-    	
-    	for(Edge edge : edges)
-    		sb.append(edge+"\n");
-    	return sb.toString();
-    }
-	    
-	private static void out()
+	public static void find_mst() throws FatalError
 	{
-		System.out.println(number_of_nodes);
-		for(int i=0; i<number_of_nodes; i++)
+		int current	= 0;
+		int min		= Integer.MAX_VALUE;
+		int minimum	= 0;
+		
+		Collections.sort(DataStorage.edges);
+
+		for (int i = 0; i < DataStorage.edges.size(); i++)
+			DataStorage.edges.get(i).id = i;
+
+        PowerSet			subsets_of_a	= new PowerSet(A, K);
+		Kruskal				krustkal		= new Kruskal(size - K);
+
+		
+		ArrayList<Edge> help;
+
+		for(Set<Integer> I : subsets_of_a)
 		{
-			for(int j=0; j<number_of_nodes; j++)	
-				System.out.print(weight_matrix[j+(number_of_nodes*i)]+" ");
-			System.out.println();
+			DataStorage.marker.clear();
+			DataStorage.marker.addAll(I);
+			
+			krustkal.clear();
+
+			if ((current = krustkal.analyse()) != -1)
+			{
+				minimum = -1;
+
+				for(Integer pointer : DataStorage.marker)
+				{
+					help = list.get(pointer);
+					for (int i = 0; i < help.size(); i++)
+					{
+						if(!DataStorage.marker.contains(help.get(i).to))
+						{
+							minimum = help.get(i).weight;
+							break;
+						}
+					}
+					if(minimum != -1)
+					{
+						current += minimum;
+						continue;
+					}
+					
+					current = Integer.MAX_VALUE;
+					
+					break;
+				}
+				
+				if (current < min) min = current;
+			}
 		}
 		
-		System.out.print(cardinality_of_A+"  ");
-		for(int a : A)
-			System.out.print(a+" ");
-		
-		System.out.println("\n"+constant_K);
+		if(min == Integer.MAX_VALUE) throw new FatalError();
+		result=min;
 	}
+
+	static class FatalError extends RuntimeException
+	{ private static final long serialVersionUID = 3638938829930139263L; }
 	
-	static class Node
-	{
-	    int id			= 0;
-	    boolean visited	= false;
-
-	    public Node(int id)
-	    { this.id = id; }
-
-	    public String toString()
-	    { return (this.id+1)+""; }
-	}
-	
-	static class Edge
-	{
-	    Node node1;
-	    Node node2;
-	    int weight;
-	    boolean used = false;
-
-	    Edge(Node node1, Node node2, int weight)
-	    {
-	        this.node1	= node1;
-	        this.node2	= node2;
-	        this.weight	= weight;
-	    }
-
-	    public void visit()
-	    {
-	        node1.visited=true;
-	        node2.visited=true;
-	    }
-
-	    public boolean areNodesVisited()
-	    { return (node1.visited & node2.visited); }
-
-	    public void setUsed()
-	    {
-	        used = true;
-	        visit();
-	    }
-
-	    public String toString()
-	    { return this.node1+"---"+this.node2+" | w:"+this.weight; }
-
-	}
-
-}
+}	

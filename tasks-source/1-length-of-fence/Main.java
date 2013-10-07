@@ -11,29 +11,27 @@ public class Main
 	public static void main(String[] args) throws IOException
 	{
 
-		int counter			= 1;
-		int number_of_nodes = Integer.valueOf(bi.readLine());
+		byte counter			= 1;
+		byte number_of_nodes = Byte.valueOf(bi.readLine());
 		
 		double sum			= 0;
-		int last_x			= -1;
-		int last_y			= -1;
-		int first_x			= 0;
-		int first_y			= 0;
-		int x				= 0;
-		int y				= 0;
+		byte last_x			= -1;
+		byte last_y			= -1;
+		byte first_x			= 0;
+		byte first_y			= 0;
+		byte x				= 0;
+		byte y				= 0;
+		String line[]			= bi.readLine().split(" ");
 		
-		String line			= bi.readLine();
-		int index			= line.indexOf(' ');
 		
-        first_x = last_x = x = cast(line.substring(0, index));
-		first_y = last_y = y = cast(line.substring(index + 1));
+        first_x = last_x = x = cast(line[0]);
+		first_y = last_y = y = cast(line[1]);
 		
 		while (counter++ < number_of_nodes)
 		{
-			line	=  bi.readLine();
-			index	=  line.indexOf(' ');
-	        x		=  cast(line.substring(0, index));
-	        y		=  cast(line.substring(index + 1));
+			line	=  bi.readLine().split(" ");
+	        x		=  cast(line[0]);
+	        y		=  cast(line[1]);
 			sum		+= sqrt(x-last_x, y-last_y);
 			last_x	=  x;
 			last_y	=  y;
@@ -88,9 +86,9 @@ public class Main
 	    return s;
 	}
 	
-	private static int cast(String s)
+	private static byte cast(String s)
 	{
-		int result	= 0;
+		byte result	= 0;
 		int i		= 0;
 		int len		= s.length();
 		int digit	= 0;
