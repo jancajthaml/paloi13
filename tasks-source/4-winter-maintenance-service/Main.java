@@ -15,13 +15,13 @@ public class Main
     
     //###############################################################################//
     
-    public static void main (String[] args) throws NumberFormatException, IOException
+    public static void main (String ... args) throws NumberFormatException, IOException
     {	
         try
         {
             read_data	();
             walk_graph  ();
-       	 	print_path  ();
+            print_path  ();
         }
         catch(FatalError r) { }
         catch(Throwable r)  { }
@@ -40,76 +40,79 @@ public class Main
         int from  = -1;
         int to    = -1;
         
-        Reader:for (;;)
-		{
+        Reader:while(true)
+        {
             StringTokenizer st  =  null;
             try                             { st = new StringTokenizer(in.readLine()," ");  }
             catch (NumberFormatException e) { throw new FatalError();                       }
             catch (IOException e)           { throw new FatalError();                       }
             
-            from	= Integer.valueOf(st.nextToken());
-            to		= Integer.valueOf(st.nextToken());
+            from  =  Integer.valueOf(st.nextToken());
+            to    =  Integer.valueOf(st.nextToken());
             
-            if(from==0 && to==0) break Reader;
-            graph.addEdge(from, to);
+            if( from==0 && to==0 ) break Reader;
+
+            graph . addEdge( from, to );
         }
     }
-    
-	static void walk_graph()
+
+    static void walk_graph()
     {
-		Queue[] copy   = new Queue[size];
-		Stack stack    = new Stack();
-    	Stack circuit  = new Stack();
+		Queue[] copy     =  new Queue[size];
+		Stack   stack    =  new Stack();
+    	Stack   circuit  =  new Stack();
 
         for (int v = 0; v < size; v++)
         {
-        	copy[v] = new Queue();
-            for (int w : graph.getVertexNeighbours(v))
-                copy[v].enqueue(w);
+        	copy[ v ] = new Queue();
+            for( int w : graph.getVertexNeighbours( v ) )
+                copy[ v ].enqueue( w );
         }
         
     	int location = 0;
     	
-    	stack.push(location);
+    	stack.push( location );
     	
-    	while(!copy[location].isEmpty())
+    	while( !copy[ location ].isEmpty() )
     	{
-    		stack.push(location = copy[location].dequeue());	
-    		while(copy[location].isEmpty() && !stack.isEmpty())
-    			circuit.push(location = stack.pop());
+    		stack.push( location = copy[ location ].dequeue() );	
+    		while( copy[location].isEmpty() && !stack.isEmpty() )
+    			circuit.push( location = stack.pop() );
     	}
     	
-    	while(!circuit.isEmpty()) path.enqueue(circuit.pop());
+    	while( !circuit.isEmpty() ) path . enqueue( circuit.pop() );
     }
 
-	static void print_path()
-	{
-		StringBuffer buffer = new StringBuffer();
-		
-		buffer.append(size);
-		buffer.append('\n');
-		int last = -1;
-		for (int v : path)
+    static void print_path()
+    {
+        StringBuffer buffer  =  new StringBuffer();
+        int last             =  -1;
+
+        buffer . append ( size );
+        buffer . append ( '\n' );
+        
+        for( int v : path )
 		{
-			if(last==-1)
-			{
-				last = v;
-				continue;
-			}
+            if(last==-1)
+            {
+                last = v;
+                continue;
+            }
 			
-			else
-			{
-				buffer.append(last);
-				buffer.append(' ');
-				buffer.append(v);
-				buffer.append('\n');
-				last = v;
-			}
-		}
-		
-		System.out.println(buffer);
-	}
-	
+            else
+            {
+                buffer . append ( last );
+                buffer . append ( ' '  );
+                buffer . append ( v    );
+                buffer . append ( '\n' );
+
+                last = v;
+            }
+        }
+
+        System.out.println(buffer);
+    }
+
     static class FatalError extends RuntimeException
     { private static final long serialVersionUID = 3638938829930139263L; }
     

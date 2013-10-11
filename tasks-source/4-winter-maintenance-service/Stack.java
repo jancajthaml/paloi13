@@ -6,30 +6,30 @@ import java.util.Iterator;
 public class Stack implements Iterable<Integer>, Iterator<Integer>
 {
 
-    private Node first		= null;
-    private Node current	= null;
+    private Node first    =  null;
+    private Node current  =  null;
 
     public boolean isEmpty()
     { return first == null; }
 
-    public void push(int id)
+    public void push( int id )
     {
-        Node old	= first;
-        first		= new Node();
-        first.id	= id;
-        first.next	= old;
+        Node old    =  first;
+        first       =  new Node();
+        first.id    =  id;
+        first.next  =  old;
     }
 
     public int pop()
     {
-        int id  = first.id;
-        first   = first.next;
+        int id  =  first.id;
+        first   =  first.next;
         return id;
     }
 
     public Iterator<Integer> iterator()
     {
-    	current = first;
+    	current  =  first;
         return this;
     }
 
@@ -41,8 +41,8 @@ public class Stack implements Iterable<Integer>, Iterator<Integer>
 
     public Integer next()
     {
-    	int id   = current.id;
-    	current  = current.next; 
+    	int id   =  current.id;
+    	current  =  current.next; 
     	return id;
     }
     

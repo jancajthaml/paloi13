@@ -6,22 +6,22 @@ import java.util.Iterator;
 public class Queue implements Iterable<Integer>, Iterator<Integer>
 {
 
-	private Node first		= null;
-	private Node last		= null;
-	private Node current	= null;
+    private Node first    =  null;
+    private Node last     =  null;
+    private Node current  =  null;
 
     public boolean isEmpty()
     { return first == null; }
 
-    public void enqueue(int id)
+    public void enqueue( int id )
     {
-        Node old		= last;
-        last			= new Node();
-        last.id			= id;
-        last.next		= null;
+        Node old   =  last;
+        last       =  new Node();
+        last.id    =  id;
+        last.next  =  null;
         
-        if (isEmpty()) first	= last;
-        else           old.next	= last;
+        if (isEmpty()) first     =  last;
+        else           old.next  =  last;
     }
 
     public Integer dequeue()
@@ -34,7 +34,7 @@ public class Queue implements Iterable<Integer>, Iterator<Integer>
 
     public Iterator<Integer> iterator()
     {
-    	current = first;
+    	current  =  first;
     	return this;
     }
 
@@ -46,13 +46,13 @@ public class Queue implements Iterable<Integer>, Iterator<Integer>
 
     public Integer next()
     {
-    	int id   = current.id;
-    	current  = current.next; 
+    	int id   =  current.id;
+    	current  =  current.next; 
     	return id;
     }
 
-	private static class Node
-	{
+    private static class Node
+    {
         private int id;
         private Node next;
     }
