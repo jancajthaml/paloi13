@@ -1,62 +1,68 @@
 package pal;
 
+import java.util.BitSet;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
-class PowerSet implements Iterator<Set<Integer>>, Iterable<Set<Integer>>
+public class PowerSet implements Iterator<BitSet>, Iterable<BitSet>
 {
-	private  int        size   =  0;
-	private  Integer[]  arr    =  null;
-	private  boolean[]  bset   =  null;
+    private int      size   = 0;
+    private int      index  = 0;
+    private BitSet   bit    = new BitSet();
+    private boolean  last   = false;
+    private boolean  end    = false;
+    private int      count  = 0;
+
+	public PowerSet(int size, int k)
+	{
+		this.size = size;
+		bit.set(0, k, true);
+		index = k - 1;
+	}
+
+	public BitSet next()
+	{ return bit; }
+
+	@Override public Iterator<BitSet> iterator()
+	{ return this; }
+
 	
-	public PowerSet(List<Integer> set, int size)
-	{
-		this.size  = size;
-		this.arr   = set.toArray(new Integer[set.size()]);
-		this.bset  = new boolean[arr.length + 1];
-
-		for (int i = 0; i < size; i++) bset[i]=true;
-	}
-
 	@Override public boolean hasNext()
-	{ return !bset[arr.length]; }
-
-	@Override public Set<Integer> next()
 	{
-		Set<Integer> set = new TreeSet<Integer>();
-	        
-		for (int i = 0; i < arr.length; i++) if (bset[i])
-			set.add(arr[i]);
-
-		do { increment(); }
-		while ((count() != size));
-
-		return set;
-	}
-
-	protected void increment()
-	{
-		for (int i = 0; i < bset.length; i++)
+		if(end) return false;
+		if (size > index++)
 		{
-			if (bset[i])
-				bset[i] = false;
-			else
-			{
-				bset[i] = true;
-				break;
-			}
+			bit.set(index-1, false);
+			bit.set(index,true);
+			return true;
 		}
+		
+		last	= true;
+		count	= 1;
+		
+		for (int i = size - 2; i >= 0; i--)
+		{
+			if (bit.get(i))
+			{
+				count++;
+				if (!last)
+				{
+					count--;
+					bit.set(i++,false);
+					bit.set(i,true);
+					bit.set(i+1,i+1+count,true);
+					index = i + count;
+					bit.set(i+1+count,size,false);
+					return true;
+				}
+			}
+			last = bit.get(i);
+		}
+		
+		end = true;
+		return true;
 	}
 
-	protected int count()
-	{
-		int count = 0;
-		for (int i = 0; i < bset.length; i++) if (bset[i]) count++;
-		return count;
-	}
+	@Override public void remove() { throw new ConcurrentModificationException(); }
 
-	@Override public void remove(){}
-	@Override public Iterator<Set<Integer>> iterator() { return this; }
 }

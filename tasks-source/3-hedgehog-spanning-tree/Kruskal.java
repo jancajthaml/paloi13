@@ -31,7 +31,7 @@ public class Kruskal
 				edges_discovered	++;
 			}
 			
-			if (vertices_discovered == edges_discovered+1) return size;
+			if ((vertices_discovered-1) == edges_discovered) return size;
 		}
 		return -1;
 	}

@@ -17,16 +17,13 @@ class Edge implements Comparable<Edge>
     }
 	    
     public int compareTo(Edge o)
-    {
-        if (this.weight > o.weight)			return 1;
-        else if (this.weight < o.weight)	return -1;
-        else								return 0;
-    }
-	    
+    { return (this.weight <= o.weight)?-1:1;}
+	  /*  
     public boolean equals(Object another)
     {
     	if(!(another instanceof Edge)) return false;
-    	return ((Edge)another).from == this.from && ((Edge)another).to == this.to && ((Edge)another).weight == this.weight;
+    	return ((Edge)another).id == this.id;
+    //	return ((Edge)another).from == this.from && ((Edge)another).to == this.to && ((Edge)another).weight == this.weight;
     }
-
+*/
 }
