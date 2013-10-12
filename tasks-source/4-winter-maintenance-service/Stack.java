@@ -48,8 +48,8 @@ public class Stack implements Iterable<Integer>, Iterator<Integer>
     
     private static class Node
     {
-        private int id;
-        private Node next;
+        private int   id;
+        private Node  next;
     }
 
 }

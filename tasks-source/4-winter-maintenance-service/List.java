@@ -6,8 +6,8 @@ import java.util.Iterator;
 public class List implements Iterable<Integer>, Iterator<Integer>
 {
 
-    private Node first    =  null;
-    private Node current  =  null;
+    private Node  first    =  null;
+    private Node  current  =  null;
     
     public boolean isEmpty()
     { return first == null; }
@@ -41,8 +41,8 @@ public class List implements Iterable<Integer>, Iterator<Integer>
     
     private class Node
     {
-        private int id;
-        private Node next;
+        private int   id;
+        private Node  next;
     }
 
 }
