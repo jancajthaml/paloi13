@@ -21,13 +21,13 @@ public class Main
     {	
         try
         {
-            read_data	                                   ();
-            find_start_vertex__and__check_euler_existence  ();
-            walk_graph                                     ();
-            print_path                                     ();
+            read_data	                                 ();
+            find_start_node__and__check_euler_existence  ();
+            walk_graph                                   ();
+            print_path                                   ();
         }
         catch(FatalError r) { System.out.println("-1"); }
-        catch(Throwable r)  { r.printStackTrace();}
+        catch(Throwable r)  { }
         finally             { }
     }
     
@@ -46,16 +46,16 @@ public class Main
         Reader:while(true)
         {
             StringTokenizer st  =  null;
-            try                             { st = new StringTokenizer(in.readLine()," ");  }
-            catch (NumberFormatException e) { throw new FatalError();                       }
-            catch (IOException e)           { throw new FatalError();                       }
+            try                             { st = new StringTokenizer(in.readLine()," "); }
+            catch (NumberFormatException e) { throw new FatalError();                      }
+            catch (IOException e)           { throw new FatalError();                      }
             
             from  =  Integer.valueOf(st.nextToken());
             to    =  Integer.valueOf(st.nextToken());
             
             if( from==0 && to==0 ) break Reader;
 
-            if(first==-1) first=from;
+            if( first == -1 ) first=from;
             
             graph . addEdge( from, to );
         }
@@ -63,16 +63,16 @@ public class Main
 
     static void walk_graph() throws FatalError
     {
-    	if(first==-1) return;
+    	if( first == -1 ) return;
     	
     	Queue[] copy      =  new Queue[size];  // copy of graph data
     	Stack   stack     =  new Stack();      // cycle stack
     	Stack   circuit   =  new Stack();      // walked path
     	int     location  = first;
     	
-        for (int v = 0; v < size; v++)
+        for( int v = 0; v < size; v++ )
         {
-        	copy[ v ] = new Queue();
+            copy[ v ] = new Queue();
             for( int w : graph.getVertexNeighbours( v ) )
                 copy[ v ].enqueue( w );
         }
@@ -81,15 +81,18 @@ public class Main
     	
     	while( !copy[ location ].isEmpty() )
     	{
-    		stack.push( location = copy[ location ].dequeue() );	
-    		while( copy[location].isEmpty() && !stack.isEmpty() )
-    			circuit.push( location = stack.pop() );
+            stack.push( location = copy[ location ].dequeue() );	
+            while( copy[location].isEmpty() && !stack.isEmpty() )
+            {
+            	location = stack.pop();
+                circuit.push( location );
+            }
     	}
     	
     	while( !circuit.isEmpty() ) path . enqueue( circuit.pop() );
     }
 
-    static void find_start_vertex__and__check_euler_existence() throws FatalError
+    static void find_start_node__and__check_euler_existence() throws FatalError
     {
         ArrayList<Integer> start	= new ArrayList<Integer>();
         ArrayList<Integer> end		= new ArrayList<Integer>();
@@ -117,8 +120,8 @@ public class Main
         buffer . append ( '\n' );  // ENDL
         
         for( int v : path )
-		{
-            if(last==-1)
+        {
+            if(last==-1 || last==v)
             {
                 last = v;
                 continue;
