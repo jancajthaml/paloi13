@@ -26,9 +26,9 @@ public class Main
             generate_permutations ( ) ;
             find_best_candidate   ( ) ;
             print_solution        ( ) ;
-		}
+        }
         catch(Throwable t) { /*ignore*/  }
-		finally            { in.close(); }
+        finally            { in.close(); }
 	}
 
 	//###############################################################################//
@@ -41,33 +41,33 @@ public class Main
 
 	static void find_best_candidate()
 	{
-		for( Permutation i : permutations )
-		{
-			             heap . recycle ( i ) ;
-			int diff  =  heap . diff    (   ) ;
+        for( Permutation i : permutations )
+        {
+            heap . recycle ( i ) ;
+            int diff  =  heap . diff    (   ) ;
 			
-			if( diff>best_eval )
-			{
-				best_eval  =  diff;
-				best       =  i;
-			}
-		}
+            if( diff>best_eval )
+            {
+                best_eval  =  diff;
+                best       =  i;
+            }
+        }
 
-		best . clip ( M );
+        best . clip ( M );
 	}
 
 	static void read_data() throws Throwable
 	{
-		in     =  new Fio         (   System.in   );
-		N      =  in . nextInt    (               );
-		M      =  in . nextInt    (               );
-		LOW    =  new Permutation ( new int [ M ] );
-		CLONE  =  new Permutation ( new int [ M ] );
-		HI     =  new Permutation ( new int [ M ] );
+        in     =  new Fio         (   System.in   );
+        N      =  in . nextInt    (               );
+        M      =  in . nextInt    (               );
+        LOW    =  new Permutation ( new int [ M ] );
+        CLONE  =  new Permutation ( new int [ M ] );
+        HI     =  new Permutation ( new int [ M ] );
 	
-		for( int i=0; i<M; i++ ) CLONE . data [ i ] =
+        for( int i=0; i<M; i++ ) CLONE . data [ i ] =
                                    LOW . data [ i ] = in . nextInt();
-		for( int i=0; i<M; i++ )    HI . data [ i ] = in . nextInt();
+        for( int i=0; i<M; i++ )    HI . data [ i ] = in . nextInt();
 	}
 	
 	static void generate_permutations()
@@ -75,28 +75,27 @@ public class Main
 	
 	static void generate_permutations( Permutation input, int start )
 	{
-		if( input.compareTo( LOW ) == -1 ) return;
-		if( input.compareTo( HI  ) ==  1 ) return;
+        if( input.compareTo( LOW ) == -1 || input.compareTo( HI  ) ==  1 )  return;
 
-		int size = input.data.length;
+        int size = input.data.length;
 		
-		if( size==start+1 )
-		{
-			int[]  n  =  new int [ N ]       ;			
-			int    i  =  input.data.length-1 ;
-			
-			System.arraycopy( input.data , 0 , n , 0 , i+1 );
+        if( size==start+1 )
+        {
+            int[]  n  =  new int [ N ]       ;			
+            int    i  =  input.data.length-1 ;
 
-			while( i++ < n.length-1 )  n[i]  =  M * (i/M) + input.data [ i%M ];
+            System.arraycopy( input.data , 0 , n , 0 , i+1 );
 
-			permutations.add( new Permutation( n ) );
-		}
-		else for( int i=start; i < size; i++ )
-		{	
-			 input . swap           ( i     , start   );
-			 generate_permutations  ( input , start+1 );
-			 input . swap           ( i     , start   );
-		 }
-	 }
+            while( i++ < n.length-1 )  n[i]  =  M * (i/M) + input.data [ i%M ];
+
+            permutations.add( new Permutation( n ) );
+        }
+        else for( int i=start; i < size; i++ )
+        {	
+             input . swap           ( i     , start   );
+             generate_permutations  ( input , start+1 );
+             input . swap           ( i     , start   );
+        }
+    }
 
 }

@@ -9,38 +9,38 @@ public class BinomialHeap
     
     private static class Node
     {
-    	public  int   value    = -1;
-    	public  Node  child    = null;
-    	public  Node  sibling  = null;
-    	public  int   degree   = 0;
+        int   value    = -1;
+        Node  child    = null;
+        Node  sibling  = null;
+        int   degree   = 0;
     	
-    	public Node( int e )
-    	{ value	= e; }
+        public Node( int e )
+        { value  =  e; }
     	
-    	public int max()
-    	{
-    		int  max  =  this . value;
-    		Node x    =  this . child;
+        public int max()
+        {
+            int  max  =  this . value;
+            Node x    =  this . child;
     		
-    		while( x != null )
-    		{
-    			int        v    =  x . max()   ;
-    			if(v>max)  max  =  v           ;
-    			           x    =  x . sibling ;
-    		}
+            while( x != null )
+            {
+                int        v    =  x . max()   ;
+                if(v>max)  max  =  v           ;
+                           x    =  x . sibling ;
+            }
 
-    		return max;
-    	}
+            return max;
+        }
     }
 
-	public void insert( int e )
+    public void insert( int e )
     {
     	BinomialHeap  prime  =  new BinomialHeap (       );
     	prime.head           =  new Node         (   e   );
     	this.head            =  this.union       ( prime ).head;
     }
 	
-	public BinomialHeap union( BinomialHeap h2 )
+    public BinomialHeap union( BinomialHeap h2 )
     {
     	BinomialHeap h	=  new BinomialHeap();
 
@@ -84,17 +84,17 @@ public class BinomialHeap
 
     private void binomialLink( Node y, Node z )
     {
-    	y . sibling  =  z.child;
-    	z . child    =  y;
-    	z . degree++;
+        y . sibling  =  z.child;
+        z . child    =  y;
+        z . degree++;
     }
 
     private static Node binomialHeapMerge( BinomialHeap h1, BinomialHeap h2 )
     {
-    	if      ( h1.head == null )  return h2 . head;
-    	else if ( h2.head == null )  return h1 . head;
-    	else
-    	{
+             if ( h1.head == null )  return h2 . head;
+        else if ( h2.head == null )  return h1 . head;
+        else
+        {
     		Node head	= null;
     		Node tail	= null;
     		Node h1Next	= h1.head,
@@ -136,24 +136,24 @@ public class BinomialHeap
 
 	public int diff()
 	{
-		int   difference  =  0    ;
-		Node  tree        =  head ;
-		
-		while( tree!=null )
-		{
-			int  max         =   tree.max()   ;
-			int  root        =   tree.value   ;
-			     difference  +=  max - root   ;
-			     tree        =   tree.sibling ;
-		}
-		
-		return difference;
-	}
+        int   difference  =  0    ;
+        Node  tree        =  head ;
+
+        while( tree!=null )
+        {
+            int  max         =   tree.max()   ;
+            int  root        =   tree.value   ;
+                 difference  +=  max - root   ;
+                 tree        =   tree.sibling ;
+        }
+
+        return difference;
+    }
 
 	public void recycle( Permutation data )
 	{
-		head = null;
-		for( int i : data.data ) insert( i );
+        head = null;
+        for( int i : data.data ) insert( i );
 	}
 
 }
