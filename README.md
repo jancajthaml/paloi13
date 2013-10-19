@@ -19,3 +19,9 @@ This git serves as the _open personal repository_ for courses **A4M33PAL** and *
 * [Hedgehog MST](https://github.com/jancajthaml/paloi13/wiki/Hedgehog-minimum-spanning-tree)
 * [Winter Maintenance Service](https://github.com/jancajthaml/paloi13/wiki/Winter-Maintenance-Service)
 * [Building binomial heaps](https://github.com/jancajthaml/paloi13/wiki/Building-Binomial-Heaps)
+
+***
+
+The solutions are intended to be written both in C and Java.
+
+The reason is to show the strenght and weaknesses both C and Java and "how to write code in them" to get most of the target language.
