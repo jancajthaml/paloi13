@@ -7,12 +7,6 @@ public class BinomialHeap
     public BinomialHeap()
     { head = null; }
     
-    public BinomialHeap( Permutation data )
-    {
-    	head = null;
-    	for( int i : data.data ) insert( i );
-    }
-    
     private static class Node
     {
     	public  int   value    = -1;
@@ -154,6 +148,12 @@ public class BinomialHeap
 		}
 		
 		return difference;
+	}
+
+	public void recycle( Permutation data )
+	{
+		head = null;
+		for( int i : data.data ) insert( i );
 	}
 
 }
