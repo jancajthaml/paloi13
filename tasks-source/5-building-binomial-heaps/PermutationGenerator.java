@@ -25,16 +25,12 @@ public class PermutationGenerator implements Iterator<Permutation>, Iterable<Per
 
 	@Override public boolean hasNext()
 	{
-		boolean end  =  ready;
-        boolean h    =  true;
-        
-        for( int i = 1 ; i < helper.data.length ; i++ )
-        {
-            end = end && helper.data[i] < helper.data[i-1];
-            if( helper.data[i] != high[i] ) h = false;
-        }
+        boolean end    =  ready;
 
-        return !h && !end;
+        for( int i = 0 ; i < helper.data.length ; i++ )
+            if( helper.data[i] != high[i] ) end = false;
+        
+        return !end;
 	}
 
 	@Override public Permutation next()
@@ -51,7 +47,6 @@ public class PermutationGenerator implements Iterator<Permutation>, Iterable<Per
         for( ; helper.data[ j ] > helper.data[ j+1 ] ; j-- ) ;
         for( ; helper.data[ j ] > helper.data[ k   ] ; k-- ) ;
 
-        
         helper.swap(k, j);
         
         int r = helper.data.length - 1;
@@ -70,17 +65,25 @@ public class PermutationGenerator implements Iterator<Permutation>, Iterable<Per
 	
 	private Permutation expand( )
 	{
+		try{
         int    M  =  helper.data.length  ;
         int    i  =  M-1                 ;
-
+        int    N  = it.data.length-1;
+        
         System.arraycopy( helper.data , 0 , it.data , 0 , i+1 );
         
-        while( i++ < it.data.length-1 )  it.data[i]  =  M * (i/M) + helper.data [ i%M ];
+        while( i++ < N )  it.data[i]  =  M * (i/M) + helper.data [ i%M ];
 
         return it;
+		}
+		catch(Throwable t)
+		{
+			System.arraycopy( helper.data , 0 , it.data , 0 , it.data.length );
+			return it;
+		}
 	}
 
 	@Override public void remove()
 	{ throw new ConcurrentModificationException(); }
- 
+
 }
