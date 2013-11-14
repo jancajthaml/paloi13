@@ -19,6 +19,14 @@ This git serves as the _open personal repository_ for courses **A4M33PAL** and *
 * [Hedgehog MST](https://github.com/jancajthaml/paloi13/wiki/Hedgehog-minimum-spanning-tree)
 * [Winter Maintenance Service](https://github.com/jancajthaml/paloi13/wiki/Winter-Maintenance-Service)
 * [Building binomial heaps](https://github.com/jancajthaml/paloi13/wiki/Building-Binomial-Heaps)
+* [Counting Spanning Trees](https://github.com/jancajthaml/paloi13/wiki/Counting-Spanning-Trees)
+* [Small Graph Isomorphism](https://github.com/jancajthaml/paloi13/wiki/Small-Graph-Isomorphism)
+* [Cyclic Isomers](https://github.com/jancajthaml/paloi13/wiki/Cyclic-Isomers)
+* [Language accepted by NFA](https://github.com/jancajthaml/paloi13/wiki/Language-accepted-by-NFA)
+
+## Big Tasks
+* [Travelling circus](https://github.com/jancajthaml/paloi13/wiki/Travelling-circus)
+ 
 
 ***
 
